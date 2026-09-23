@@ -120,7 +120,7 @@ def main():
     ap.add_argument("--events-dir", required=True,
                     help="dir for <side>.events.jsonl (live feed)")
     ap.add_argument("--repo-dir", required=True, help="cybergym repo for gen_task")
-    ap.add_argument("--base-url", default="https://api.adversarial.ai/v1")
+    ap.add_argument("--base-url", default="https://api.adverserial.ai/v1")
     ap.add_argument("--model", default="lordx64/cyberkimi")
     ap.add_argument("--image", default="cybergym/oss-fuzz-base-runner:latest")
     ap.add_argument("--task-image", default=None,
@@ -176,7 +176,6 @@ def main():
 
     image = args.task_image or args.image
     container = Container(image, str(gen_dir))
-    transcript.writestr("" if False else "")
     transcript.write_text("")
 
     def log(role, content, **extra):
