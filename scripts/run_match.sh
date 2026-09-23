@@ -30,8 +30,8 @@ mkdir -p "$RUN_DIR"/{kimi,altar}/logs
 cp "$TASK_LIST" "$RUN_DIR/tasks.txt"
 
 # --- manifest: written BEFORE the run starts -----------------------------------
-KIMI_MODEL_DESC="${KIMI_MODEL_DESC:-kimi (unset!)}"
-ALTAR_MODEL_DESC="${ALTAR_MODEL_DESC:-altar-1 (unset!)}"
+KIMI_MODEL_DESC="${KIMI_MODEL_DESC:-CyberKimi by Adverserial AI (lordx64/cyberkimi)}"
+ALTAR_MODEL_DESC="${ALTAR_MODEL_DESC:-Altar-1 (Aikido) (unset!)}"
 CYBERGYM_COMMIT=$(git -C "$BASE/repos/cybergym" rev-parse HEAD 2>/dev/null || echo unknown)
 OPS_COMMIT=$(git -C "$OPS_REPO_DIR" rev-parse HEAD 2>/dev/null || echo unknown)
 

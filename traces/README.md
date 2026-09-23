@@ -32,8 +32,8 @@ dashboard and replay UI; if it ever disagrees with `raw/`, `raw/` wins.
   "task_ids": ["arvo:10400", "..."],
   "difficulty": "level1",
   "sides": {
-    "kimi":  { "model": "kimi-k2", "endpoint": "api.moonshot.ai", "params": {} },
-    "altar": { "model": "altar-1", "endpoint": "<runpod vllm>",  "params": {} }
+    "kimi":  { "model": "CyberKimi by Adverserial AI (lordx64/cyberkimi)", "endpoint": "api.adverserial.ai", "params": {} },
+    "altar": { "model": "Altar-1 (Aikido)", "endpoint": "<runpod vllm>", "params": {} }
   },
   "harness": {
     "cybergym_commit": "<git sha>",
