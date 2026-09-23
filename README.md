@@ -9,7 +9,7 @@ Public evidence repo: **https://github.com/lordx64/cyberkimi-pvp**
 
 ## Competing models
 
-- **Cyberkimi (Kimi)** — API-served Kimi model
+- **CyberKimi by Adverserial AI** — Kimi model served at api.adverserial.ai (OpenAI-compatible)
 - **Altar-1** — Aikido's open-weight security model:
   **https://huggingface.co/AikidoSec/altar-1** — served on our own GPU
   (RunPod B300-class, vLLM, OpenAI-compatible endpoint)

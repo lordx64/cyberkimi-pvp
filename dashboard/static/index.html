@@ -41,11 +41,11 @@
 
 <div id="columns">
   <section class="pane">
-    <h2 id="kimi-head">KIMI</h2>
+    <h2 id="kimi-head">CYBERKIMI BY ADVERSERIAL AI</h2>
     <div class="log" id="log-kimi"><div class="placeholder">select a match</div></div>
   </section>
   <section class="pane">
-    <h2 id="altar-head">ALTAR</h2>
+    <h2 id="altar-head">ALTAR-1</h2>
     <div class="log" id="log-altar"><div class="placeholder">select a match</div></div>
   </section>
 </div>
@@ -93,7 +93,28 @@ function addEvent(side, line) {
   log.scrollTop = log.scrollHeight;
 }
 
+function prettyModel(m, fallback) {
+  if (!m) return fallback;
+  const s = m.toLowerCase();
+  if (s.includes("cyberkimi")) return "CyberKimi by Adverserial AI";
+  if (s.includes("altar")) return "ALTAR-1";
+  return m;
+}
+
+async function setPaneTitles(runId) {
+  try {
+    const man = await (await fetch(`/api/runs/${runId}/manifest`)).json();
+    const k = man?.sides?.kimi?.model, a = man?.sides?.altar?.model;
+    let kl = prettyModel(k, "CYBERKIMI BY ADVERSERIAL AI");
+    let al = prettyModel(a, "ALTAR-1");
+    if (kl === al) { kl += " — A"; al += " — B"; }
+    $("kimi-head").textContent = kl;
+    $("altar-head").textContent = al;
+  } catch (e) { /* keep defaults */ }
+}
+
 function connect(runId) {
+  setPaneTitles(runId);
   if (ws) ws.close();
   clearLogs();
   const proto = location.protocol === "https:" ? "wss" : "ws";
