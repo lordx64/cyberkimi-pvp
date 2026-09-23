@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cyberpvp.adverserial.ai/schema/event.schema.json",
+  "title": "CyberPVP normalized agent event",
+  "type": "object",
+  "required": ["ts", "run_id", "side", "seq", "kind"],
+  "properties": {
+    "ts":     { "type": "string", "format": "date-time" },
+    "run_id": { "type": "string" },
+    "side":   { "enum": ["kimi", "altar"] },
+    "task_id": { "type": "string", "description": "e.g. arvo:10400; absent for run-level events" },
+    "seq":    { "type": "integer", "minimum": 0, "description": "monotonic per (run_id, side)" },
+    "kind": {
+      "enum": ["run_start", "task_assign", "llm_request", "llm_response",
+               "tool_call", "tool_result", "poc_submit", "verdict",
+               "budget_update", "run_end"]
+    },
+    "summary": { "type": "string", "description": "one-line human rendering for the UI" },
+    "ref": {
+      "type": "object",
+      "required": ["path", "sha256"],
+      "properties": {
+        "path":   { "type": "string" },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      },
+      "description": "pointer to the full payload inside raw/"
+    },
+    "payload": { "description": "tiny inline payload (verdict results, budget counters)" }
+  },
+  "additionalProperties": false
+}

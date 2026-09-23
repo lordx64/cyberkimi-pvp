@@ -1,0 +1,15 @@
+[Unit]
+Description=CyberPVP dashboard (cyberpvp.adverserial.ai)
+After=network.target
+
+[Service]
+User=ubuntu
+Group=ubuntu
+Environment=TRACES_DIR=/data/cyberpvp/traces
+WorkingDirectory=/data/cyberpvp/ops/dashboard
+ExecStart=/data/cyberpvp/dashboard-venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8787
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

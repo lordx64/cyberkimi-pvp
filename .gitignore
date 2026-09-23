@@ -1,0 +1,20 @@
+# secrets / keys
+*.pem
+*.key
+
+# terraform
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate*
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# live working data (published evidence lives in traces/)
+runs/
+
+# os
+.DS_Store
