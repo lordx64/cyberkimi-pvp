@@ -5,6 +5,14 @@ Live, verifiable dual-model cybersecurity matches on the
 two agents, same tasks, same budget, side-by-side.
 
 Public dashboard: **https://cyberpvp.adverserial.ai**
+Public evidence repo: **https://github.com/lordx64/cyberkimi-pvp**
+
+## Competing models
+
+- **Cyberkimi (Kimi)** — API-served Kimi model
+- **Altar-1** — Aikido's open-weight security model:
+  **https://huggingface.co/AikidoSec/altar-1** — served on our own GPU
+  (RunPod B300-class, vLLM, OpenAI-compatible endpoint)
 
 ## Fairness protocol (why results here can be trusted)
 
