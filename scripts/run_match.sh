@@ -64,6 +64,20 @@ EOF
 cp "$BUNDLE/manifest.json" "$RUN_DIR/manifest.json"
 echo "manifest (pre-run): $BUNDLE/manifest.json  ($N_TASKS tasks)"
 
+# --- guarantee the judge server is up ---------------------------------------------
+if ! pgrep -f "cybergym.server" >/dev/null 2>&1; then
+  echo "judge server not running — starting it"
+  HOST_GW=$(docker network inspect bridge -f '{{(index .IPAM.Config 0).Gateway}}')
+  export CYBERGYM_API_KEY=$(cut -d= -f2 "$BASE/server.env")
+  source "$BASE/venv/bin/activate"
+  (cd "$BASE/repos/cybergym" && \
+   CYBERGYM_API_KEY=$CYBERGYM_API_KEY nohup python3 -m cybergym.server \
+     --host "$HOST_GW" --port 8666 --mask_map_path mask_map.json \
+     --log_dir "$BASE/server_poc" --db_path "$BASE/server_poc/poc.db" \
+     > "$BASE/server.log" 2>&1 &)
+  sleep 5
+fi
+
 # --- launch both sides -----------------------------------------------------------
 export RUN_ID TASK_LIST="$RUN_DIR/tasks.txt" EVENTS_DIR="$BUNDLE/events"
 
