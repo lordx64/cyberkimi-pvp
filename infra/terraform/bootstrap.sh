@@ -26,6 +26,12 @@ UUID=$(blkid -s UUID -o value "$DATA_DEV")
 grep -q "$UUID" /etc/fstab || echo "UUID=$UUID /data ext4 defaults,nofail 0 2" >> /etc/fstab
 mount -a
 
+# Ubuntu's system containerd ignores docker.json data-root and stores pull
+# content in /var/lib/containerd (root disk). Put it on /data BEFORE docker
+# install, or the benchmark's multi-GB images fill the root volume.
+mkdir -p /data/containerd
+ln -sfn /data/containerd /var/lib/containerd
+
 # --- 2. Base packages ---------------------------------------------------------
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -y
