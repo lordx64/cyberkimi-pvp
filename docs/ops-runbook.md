@@ -36,7 +36,9 @@ Names unchangeable later — the TLS cert is issued for this name.
 ssh -i ~/.ssh/cyberpvp_ed25519 ubuntu@<public_ip>
 cat /data/cyberpvp/.bootstrap_done            # bootstrap marker must exist
 
-git clone <this-repo-https-url> /data/cyberpvp/ops
+# repo is not on GitHub yet — push it from the Mac:
+#   rsync -az -e "ssh -i ~/.ssh/cyberpvp_ed25519" --exclude .git --exclude .terraform \
+#       . ubuntu@<public_ip>:/data/cyberpvp/ops/
 cd /data/cyberpvp/ops
 bash scripts/setup_box.sh                     # cybergym harness + venv
 bash scripts/download_data.sh --subset        # 10 demo tasks + server images
@@ -51,7 +53,8 @@ never public (matches upstream guidance).
 ## D. Rehearsal (dual-model dry run)
 
 ```bash
-# All details is still missing — ignore the starred lines above for now.
+# The per-side agent launch commands are handed in via env:
+# (harness-specific; determined during the rehearsal dry-run on the box)
 cd /data/cyberpvp/ops
 KIMI_RUN_CMD='...'  ALTAR_RUN_CMD='...' \
   bash scripts/run_match.sh 2026-MM-DD-test-match tasks.txt
