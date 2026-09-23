@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CyberPVP — CyberGym dual-model arena</title>
+<style>
+  :root { --bg:#0b0e14; --panel:#121722; --line:#1f2a3d; --fg:#d6e2f0; --dim:#71809b;
+          --kimi:#4ec9b0; --altar:#c586c0; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg);
+         font:14px/1.45 -apple-system,"SF Mono",Menlo,Consolas,monospace; }
+  header { padding:14px 18px; border-bottom:1px solid var(--line);
+           display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
+  h1 { font-size:17px; margin:0; letter-spacing:2px; }
+  h1 span { color:var(--dim); font-weight:normal; letter-spacing:0; font-size:13px; }
+  select,button { background:var(--panel); color:var(--fg); border:1px solid var(--line);
+                  padding:6px 10px; border-radius:4px; font:inherit; }
+  #score { margin-left:auto; color:var(--dim); }
+  #columns { display:grid; grid-template-columns:1fr 1fr; height:calc(100vh - 53px); }
+  .pane { display:flex; flex-direction:column; min-width:0; }
+  .pane + .pane { border-left:1px solid var(--line); }
+  .pane h2 { margin:0; padding:8px 12px; font-size:13px; border-bottom:1px solid var(--line);
+             background:var(--panel); }
+  #kimi-head  { color:var(--kimi); }
+  #altar-head { color:var(--altar); }
+  .log { flex:1; overflow-y:auto; padding:8px 12px; white-space:pre-wrap;
+         word-break:break-word; }
+  .ev { margin:0 0 6px; }
+  .ev .k { color:var(--dim); margin-right:8px; }
+  .placeholder { color:var(--dim); padding:18px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>CYBERPVP <span>CyberGym dual-model arena — full traces published after each match</span></h1>
+  <select id="run-select"><option value="">— select a match —</option></select>
+  <button id="connect" disabled>watch</button>
+  <div id="score"></div>
+</header>
+
+<div id="columns">
+  <section class="pane">
+    <h2 id="kimi-head">KIMI</h2>
+    <div class="log" id="log-kimi"><div class="placeholder">select a match</div></div>
+  </section>
+  <section class="pane">
+    <h2 id="altar-head">ALTAR</h2>
+    <div class="log" id="log-altar"><div class="placeholder">select a match</div></div>
+  </section>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let ws = null;
+
+async function loadRuns() {
+  const runs = await (await fetch("/api/runs")).json();
+  const sel = $("run-select");
+  sel.innerHTML = '<option value="">— select a match —</option>';
+  for (const r of runs) {
+    const res = r.results
+      ? `  [${r.results?.kimi?.solved ?? "?"} : ${r.results?.altar?.solved ?? "?"}]`
+      : "";
+    const o = document.createElement("option");
+    o.value = r.run_id;
+    o.textContent = `${r.run_id}  (${r.status}, ${r.n_tasks} tasks)${res}`;
+    sel.appendChild(o);
+  }
+}
+
+function clearLogs() {
+  for (const s of ["kimi", "altar"])
+    $("log-" + s).innerHTML = '<div class="placeholder">waiting for events…</div>';
+  $("score").textContent = "";
+}
+
+function addEvent(side, line) {
+  const log = $("log-" + side);
+  if (log.querySelector(".placeholder")) log.innerHTML = "";
+  let ev;
+  try { ev = JSON.parse(line); } catch { ev = null; }
+  const div = document.createElement("div");
+  div.className = "ev";
+  const kind = ev && ev.kind ? ev.kind + "  " : "";
+  const text = ev
+    ? (ev.summary ?? ev.task_id ?? JSON.stringify(ev.payload ?? ""))
+    : line;
+  div.textContent = `${(ev && ev.ts) || ""}  ${text}`;
+  div.insertAdjacentHTML("afterbegin",
+    `<span class="k">${kind}</span>`);
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+function connect(runId) {
+  if (ws) ws.close();
+  clearLogs();
+  const proto = location.protocol === "https:" ? "wss" : "ws";
+  ws = new WebSocket(`${proto}://${location.host}/ws/live/${runId}`);
+  ws.onmessage = m => {
+    const d = JSON.parse(m.data);
+    if (d.side === "kimi" || d.side === "altar") addEvent(d.side, d.line);
+  };
+  ws.onclose = () => { $("score").textContent = "disconnected"; };
+  ws.onopen  = () => { $("score").textContent = `live: ${runId}`; };
+}
+
+$("run-select").onchange = e => { $("connect").disabled = !e.target.value; };
+$("connect").onclick = () => connect($("run-select").value);
+loadRuns();
+</script>
+</body>
+</html>
