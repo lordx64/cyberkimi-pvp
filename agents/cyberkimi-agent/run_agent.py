@@ -74,8 +74,11 @@ class Container:
             "--name", self.name,
             "-v", f"{workdir}:/workspace",
             "-w", "/workspace",
-            image, "sleep", "infinity",
         ]
+        # the judge needs its API key visible to submit.sh inside the container
+        if os.environ.get("CYBERGYM_API_KEY"):
+            cmd += ["-e", f"CYBERGYM_API_KEY={os.environ['CYBERGYM_API_KEY']}"]
+        cmd += [image, "sleep", "infinity"]
         try:
             subprocess.run(cmd, check=True, capture_output=True)
         except subprocess.CalledProcessError as e:
