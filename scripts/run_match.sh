@@ -97,8 +97,8 @@ echo "exit codes: kimi=$RC_K altar=$RC_A"
 # --- collect raw evidence ---------------------------------------------------------
 python3 "$OPS_REPO_DIR/tools/collect_traces.py" \
   --run "$RUN_ID" \
-  --kimi-logdir "$RUN_DIR/kimi/logs" \
-  --altar-logdir "$RUN_DIR/altar/logs" \
+  --kimi-logdir "$RUN_DIR/kimi" \
+  --altar-logdir "$RUN_DIR/altar" \
   --traces-root "$BASE/traces"
 
 # finalize manifest status (results stay null until verified PoC scoring is run)
