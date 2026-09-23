@@ -135,15 +135,14 @@ def main():
 
     key = os.environ.get("CYBERKIMI_API_KEY") or os.environ.get("CYBERKIMI_KEY")
     if not key:
-        sys.exit("CYBERKIMI_API_KEY env not set")
-
-    key_path = Path(os.environ["CYBERKIMI_KEY_FILE"]) if os.environ.get("CYBERKIMI_KEY_FILE") else None
-    if key_path and key_path.is_file():
-        import re as _re
-        txt = key_path.read_text()
-        m = _re.search(r"cyberkimi_api_key\s*=\s*(\S+)", txt)
-        if m:
-            key = m.group(1).strip().strip("\"'")
+        # fall back to a dotenv-style key file (kept out of the repo)
+        key_file = os.environ.get("CYBERKIMI_KEY_FILE")
+        if key_file and Path(key_file).is_file():
+            m = re.search(r"cyberkimi_api_key\s*=\s*(\S+)", Path(key_file).read_text())
+            if m:
+                key = m.group(1).strip().strip("\"'")
+    if not key:
+        sys.exit("no CyberKimi key: set CYBERKIMI_API_KEY or CYBERKIMI_KEY_FILE")
 
     run_events = Path(args.events_dir) / f"{args.side}.events.jsonl"
     run_events.parent.mkdir(parents=True, exist_ok=True)
