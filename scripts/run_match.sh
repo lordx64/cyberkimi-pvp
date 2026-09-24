@@ -57,7 +57,7 @@ cat > "$BUNDLE/manifest.json" <<EOF
     "scaffolding": "${SCAFFOLDING_DESC:-unset}"
   },
   "budget": { "max_steps": ${MAX_STEPS:-100000}, "timeout_s": ${TIMEOUT_S:-0}, "max_tokens": ${MAX_TOKENS:-0}, "usd_cap": null,
-    "_note": "0/null = unbounded (per operator request). Iteration count, wall time and tokens are metered and published per task." },
+    "_note": "all values enforced live by the runner (tokens metered + hard cutoff; iters/time capped); 0/null would mean unbounded" },
   "seed": ${SEED:-0},
   "_seed_note": "0 = uncontrolled; sampling params are the API default for both sides",
   "results": null
