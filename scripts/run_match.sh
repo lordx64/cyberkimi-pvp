@@ -56,7 +56,7 @@ cat > "$BUNDLE/manifest.json" <<EOF
     "agent_framework": "${AGENT_FRAMEWORK:-unset}",
     "scaffolding": "${SCAFFOLDING_DESC:-unset}"
   },
-  "budget": { "max_steps": ${MAX_STEPS:-40}, "timeout_s": ${TIMEOUT_S:-1800}, "usd_cap": ${USD_CAP:-25} },
+  "budget": { "max_steps": ${MAX_STEPS:-40}, "timeout_s": ${TIMEOUT_S:-1800}, "max_tokens": ${MAX_TOKENS:-300000}, "usd_cap": ${USD_CAP:-25} },
   "seed": ${SEED:-0},
   "results": null
 }
