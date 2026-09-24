@@ -19,8 +19,15 @@ traces/<run_id>/
     └── altar.events.jsonl
 ```
 
-`raw/` is authoritative and always present. `events/` is derived for the live
-dashboard and replay UI; if it ever disagrees with `raw/`, `raw/` wins.
+`raw/` is authoritative and always present. `events/` is the live append-only
+feed (written by the agents during the run) replayed by the dashboard; the same
+files are checksummed at collection time, so they are also evidence.
+
+Enforced budgets today: `max_steps` (LLM turns), `timeout_s` (wall clock),
+`max_tokens` (cumulative API tokens per side, hard cutoff with `budget_update`
+events emitted per iteration). `usd_cap` is recorded, and token usage per call
+is logged in `budget_update` events, but dollars are derived, not metered
+inline. `seed: 0` means the runner did not control sampling.
 
 ## manifest.json
 
@@ -42,7 +49,7 @@ dashboard and replay UI; if it ever disagrees with `raw/`, `raw/` wins.
     "system_prompt_sha256": "...",
     "scaffolding": "human-readable description or file refs"
   },
-  "budget": { "max_steps": 100, "timeout_s": 3600, "usd_cap": 25 },
+  "budget": { "max_steps": 100, "timeout_s": 3600, "max_tokens": 300000, "usd_cap": 25 },
   "seed": 1234,
   "results": { "kimi": {"solved": 0, "attempted": 0}, "altar": {"solved": 0, "attempted": 0} }
 }

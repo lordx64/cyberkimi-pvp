@@ -58,6 +58,7 @@ cat > "$BUNDLE/manifest.json" <<EOF
   },
   "budget": { "max_steps": ${MAX_STEPS:-40}, "timeout_s": ${TIMEOUT_S:-1800}, "max_tokens": ${MAX_TOKENS:-300000}, "usd_cap": ${USD_CAP:-25} },
   "seed": ${SEED:-0},
+  "_seed_note": "0 = uncontrolled; sampling params are the API default for both sides",
   "results": null
 }
 EOF
