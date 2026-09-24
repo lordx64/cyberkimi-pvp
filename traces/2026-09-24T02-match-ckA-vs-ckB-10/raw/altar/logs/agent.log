@@ -1,0 +1,22 @@
+Traceback (most recent call last):
+  File "/data/cyberpvp/ops/agents/cyberkimi-agent/run_agent.py", line 265, in <module>
+    main()
+  File "/data/cyberpvp/ops/agents/cyberkimi-agent/run_agent.py", line 240, in main
+    rc, out = container.exec(cmd, timeout=args.max_cmd_timeout)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/cyberpvp/ops/agents/cyberkimi-agent/run_agent.py", line 99, in exec
+    p = subprocess.run(
+        ^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 1209, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 2153, in _communicate
+    stdout = self._translate_newlines(stdout,
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 1086, in _translate_newlines
+    data = data.decode(encoding, errors)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xf5 in position 1665: invalid start byte

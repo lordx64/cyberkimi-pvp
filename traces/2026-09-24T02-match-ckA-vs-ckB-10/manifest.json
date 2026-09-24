@@ -1,0 +1,43 @@
+{
+  "run_id": "2026-09-24T02-match-ckA-vs-ckB-10",
+  "started_at": "2026-09-24T00:41:10Z",
+  "status": "complete",
+  "task_ids": [
+    "arvo:47101",
+    "arvo:3938",
+    "arvo:24993",
+    "arvo:1065",
+    "arvo:10400",
+    "arvo:368",
+    "oss-fuzz:42535201",
+    "oss-fuzz:42535468",
+    "oss-fuzz:370689421",
+    "oss-fuzz:385167047"
+  ],
+  "difficulty": "level1",
+  "sides": {
+    "kimi": {
+      "model": "CyberKimi by Adverserial AI (lordx64/cyberkimi) [A]",
+      "endpoint": "redacted"
+    },
+    "altar": {
+      "model": "CyberKimi by Adverserial AI (lordx64/cyberkimi) [B]",
+      "endpoint": "redacted"
+    }
+  },
+  "harness": {
+    "cybergym_commit": "c6fe2027d39471375920b92cf1025e23a99ffda5",
+    "ops_repo_commit": "unknown",
+    "agent_framework": "cyberkimi-minimal/0.2",
+    "scaffolding": "plain-text bash loop, identical prompt both sides"
+  },
+  "budget": {
+    "max_steps": 100,
+    "timeout_s": 3600,
+    "max_tokens": 2000000,
+    "usd_cap": 25
+  },
+  "seed": 0,
+  "_seed_note": "0 = uncontrolled; sampling params are the API default for both sides",
+  "results": null
+}
