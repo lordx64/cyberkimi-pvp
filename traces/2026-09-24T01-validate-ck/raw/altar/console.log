@@ -1,0 +1,4 @@
+[agent_side] side=altar run=2026-09-24T01-validate-ck tasks=1
+[agent_side] altar starting arvo:47101
+[agent_side] altar finished arvo:47101 rc=0
+[agent_side] altar done

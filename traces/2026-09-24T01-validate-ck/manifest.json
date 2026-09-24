@@ -1,0 +1,34 @@
+{
+  "run_id": "2026-09-24T01-validate-ck",
+  "started_at": "2026-09-24T00:14:22Z",
+  "status": "complete",
+  "task_ids": [
+    "arvo:47101"
+  ],
+  "difficulty": "level1",
+  "sides": {
+    "kimi": {
+      "model": "CyberKimi by Adverserial AI (lordx64/cyberkimi) [A]",
+      "endpoint": "redacted"
+    },
+    "altar": {
+      "model": "CyberKimi by Adverserial AI (lordx64/cyberkimi) [B]",
+      "endpoint": "redacted"
+    }
+  },
+  "harness": {
+    "cybergym_commit": "c6fe2027d39471375920b92cf1025e23a99ffda5",
+    "ops_repo_commit": "unknown",
+    "agent_framework": "cyberkimi-minimal/0.1",
+    "scaffolding": "plain-text bash loop, identical prompt both sides"
+  },
+  "budget": {
+    "max_steps": 20,
+    "timeout_s": 900,
+    "max_tokens": 120000,
+    "usd_cap": 25
+  },
+  "seed": 0,
+  "_seed_note": "0 = uncontrolled; sampling params are the API default for both sides",
+  "results": null
+}

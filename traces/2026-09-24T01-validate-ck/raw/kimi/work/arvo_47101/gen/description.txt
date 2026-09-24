@@ -1,0 +1,1 @@
+A heap buffer overflow occurs in dwarf2dbg.c within the assign_file_to_slot function when handling .file directives with large integer values, such as .file 4294967289 "xxx.c". The function does not properly catch all cases of integer overflow, and the parameter i is not an unsigned int, which leads to this vulnerability.

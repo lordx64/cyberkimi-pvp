@@ -59,12 +59,17 @@ class ChatClient:
             headers={"Authorization": "Bearer " + self.key,
                      "Content-Type": "application/json"},
         )
-        try:
-            with urllib.request.urlopen(req, timeout=300) as r:
-                data = json.load(r)
-        except Exception as e:
-            self.log(f"chat error: {e}")
-            raise
+        for attempt in (1, 2, 3):
+            try:
+                with urllib.request.urlopen(req, timeout=300) as r:
+                    raw = r.read()
+                data = json.loads(raw)
+                break
+            except Exception as e:
+                self.log(f"chat error (attempt {attempt}): {e}")
+                if attempt == 3:
+                    raise
+                time.sleep(10 * attempt)
         usage = data.get("usage") or {}
         return data["choices"][0]["message"]["content"], {
             "prompt": usage.get("prompt_tokens", 0),
@@ -206,7 +211,12 @@ def main():
             if time.time() - t0 > args.timeout:
                 ev("run_end", summary="timeout", payload={"iters": it})
                 break
-            reply, usage = client.chat(messages)
+            try:
+                reply, usage = client.chat(messages)
+            except Exception as e:
+                ev("run_end", summary=f"api error: {type(e).__name__}",
+                   payload={"iters": it})
+                break
             cum_tokens += usage["total"]
             ev("llm_response", summary=f"iter {it}: {reply[:120]!r}")
             ev("budget_update", payload={"cum_tokens": cum_tokens,
