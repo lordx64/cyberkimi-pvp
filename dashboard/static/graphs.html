@@ -63,6 +63,13 @@
       per minute, 2-minute moving window.</figcaption>
   </figure>
 
+  <figure id="fig5" hidden>
+    <div class="chart-wrap"><canvas id="c-scores"></canvas></div>
+    <figcaption><b>Figure 0.</b> Race to the top — cumulative fraction of the task set solved
+      versus elapsed time, both agents on shared axes. Steps mark each solved task
+      (judge-confirmed crash). Right-hand labels give the final solve percentage.</figcaption>
+  </figure>
+
   <figure id="fig4" hidden>
     <figcaption style="border-top:none"><b>Table 1.</b> Per-task outcomes: iteration count,
       cumulative tokens, wall-clock seconds, and final verdict per agent.
@@ -105,6 +112,7 @@ async function loadRuns() {
 }
 
 const t0 = evs => evs.length ? Date.parse(evs[0].ts) : 0;
+const countTasks = evs => evs.filter(e => e.kind === "task_assign").length || 1;
 const mins = (ts, base) => (Date.parse(ts) - base) / 60000;
 
 function series(evs, kind) {  // cumulative count of `kind` over minutes
@@ -135,6 +143,22 @@ function verdicts(evs) {
   const base = t0(evs);
   return evs.filter(e => e.kind === "verdict" && e.payload && e.payload.exit_code)
             .map(e => ({ x: mins(e.ts, base), exit: e.payload.exit_code }));
+}
+
+// cumulative solved fraction over time, keyed on task_assign→run_end(SOLVED)
+function solveSeries(evs, total) {
+  const base = t0(evs);
+  const cur = {};
+  const pts = [];
+  let solved = 0;
+  for (const e of evs) {
+    if (e.kind === "task_assign") cur.task = e.task_id;
+    if (e.kind === "run_end" && e.payload && e.payload.task_id === cur.task) {
+      solved++;
+      pts.push({ x: mins(e.ts, base), y: (100 * solved) / total });
+    }
+  }
+  return pts;
 }
 
 function agentTable(evs, side) {
@@ -204,6 +228,28 @@ async function render(runId) {
   const nameFor = s => prettyModel(man?.sides?.[s]?.model, s);
   let kn = nameFor("kimi"), an = nameFor("altar");
   if (kn === an) { kn += " — A"; an += " — B"; }
+
+  // Figure 0 — solves over time (ladder)
+  const nTasks = man?.task_ids ? man.task_ids.length :
+    Math.max(countTasks(kimi), countTasks(altar));
+  if (nTasks > 0) {
+    document.getElementById("fig5").hidden = false;
+    const kLine = solveSeries(kimi, nTasks);
+    const aLine = solveSeries(altar, nTasks);
+    const step = s => ({ label: s, data: [], borderColor: "transparent" });
+    mk("c-scores", lineCfg("Race to the top — % tasks solved", [
+      ds(kn, A, kLine, []),
+      ds(an, B, aLine, [6, 3]),
+    ], "elapsed time (min)", "% of tasks solved"));
+    charts[charts.length - 1].options.elements.line.stepped = true;
+    charts[charts.length - 1].options.elements.point.radius = 3;
+    charts[charts.length - 1].options.scales.y.max = 100;
+    charts[charts.length - 1].update();
+    const last = (kLine.at(-1)?.y ?? 0).toFixed(0) + "%";
+    const lastB = (aLine.at(-1)?.y ?? 0).toFixed(0) + "%";
+    document.getElementById("score").textContent =
+      `${runId} — solved ${last} vs ${lastB}`;
+  }
 
   // Figure 1 — iterations
   document.getElementById("fig1").hidden = false;
