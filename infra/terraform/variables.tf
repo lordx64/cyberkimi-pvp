@@ -17,9 +17,9 @@ variable "root_volume_gb" {
 }
 
 variable "data_volume_gb" {
-  description = "Persistent /data volume for CyberGym datasets, docker images, and traces. Subset workflow fits in a few hundred GB; this default leaves room to grow into binary-only mode (~130GB) plus agent docker images."
+  description = "Persistent /data volume for CyberGym datasets, docker images, and traces. 1000 covers subset + dev matches. 2000 is needed to stage ~100 task images for a 100-challenge match (avg ~10GB/task pair)."
   type        = number
-  default     = 1000
+  default     = 2000
 }
 
 variable "ssh_cidrs" {
