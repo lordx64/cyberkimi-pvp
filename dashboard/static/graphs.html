@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CyberPVP — Research View</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<style>
+  :root { --ink:#1a1a1a; --muted:#5a6572; --line:#c9d2dc;
+          --a:#00539b; --b:#b0322c; --grid:#e3e8ee; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#f7f8fa; color:var(--ink);
+         font:14px/1.5 Georgia,"Times New Roman",serif; }
+  header { padding:12px 20px; background:#fff; border-bottom:1px solid var(--line);
+           display:flex; gap:14px; align-items:center; }
+  h1 { font-size:16px; margin:0; letter-spacing:1px; font-family:Georgia,serif; }
+  h1 span { color:var(--muted); font-size:12px; letter-spacing:0; }
+  nav a { color:var(--a); font-size:13px; margin-right:10px; }
+  select,button { font:inherit; padding:5px 9px; }
+  #score { margin-left:auto; color:var(--muted); font-size:12px; }
+  main { max-width:1180px; margin:22px auto; padding:0 18px; }
+  figure { background:#fff; border:1px solid var(--line); margin:0 0 26px;
+           padding:16px 18px 10px; }
+  figcaption { font-size:13px; color:var(--muted); margin-top:8px;
+               border-top:1px dashed var(--grid); padding-top:8px; }
+  figcaption b { color:var(--ink); }
+  .chart-wrap { position:relative; height:320px; }
+  table { border-collapse:collapse; width:100%; font-size:12.5px; background:#fff; }
+  th,td { border:1px solid var(--line); padding:5px 8px; text-align:left; }
+  th { background:#eef2f6; font-family:Georgia,serif; }
+  .empty { color:var(--muted); padding:30px; text-align:center; }
+</style>
+</head>
+<body>
+<header>
+  <h1>CYBERPVP <span>— research view</span></h1>
+  <nav>
+    <a href="/">live arena</a>
+    <a href="/graphs.html"><b>research</b></a>
+  </nav>
+  <select id="run-select"><option value="">— select a match —</option></select>
+  <div id="score"></div>
+</header>
+
+<main>
+  <div class="empty" id="empty">select a match to render figures</div>
+
+  <figure id="fig1" hidden>
+    <div class="chart-wrap"><canvas id="c-iters"></canvas></div>
+    <figcaption><b>Figure 1.</b> Cumulative LLM iterations (agent turns) versus elapsed time
+      for both agents on identical tasks. Steeper slope = faster exploration cadence.</figcaption>
+  </figure>
+
+  <figure id="fig2" hidden>
+    <div class="chart-wrap"><canvas id="c-tokens"></canvas></div>
+    <figcaption><b>Figure 2.</b> Cumulative API token consumption (prompt + completion,
+      including reasoning tokens) versus elapsed time.</figcaption>
+  </figure>
+
+  <figure id="fig3" hidden>
+    <div class="chart-wrap"><canvas id="c-activity"></canvas></div>
+    <figcaption><b>Figure 3.</b> Agent activity rate — executed tool calls (shell commands)
+      per minute, 2-minute moving window.</figcaption>
+  </figure>
+
+  <figure id="fig4" hidden>
+    <figcaption style="border-top:none"><b>Table 1.</b> Per-task outcomes: iteration count,
+      cumulative tokens, wall-clock seconds, and final verdict per agent.
+      ✗ = budget exhausted without crash; ✓ = crash triggered (solved).</figcaption>
+    <div style="max-height:420px; overflow-y:auto">
+      <table id="outcomes">
+        <thead><tr>
+          <th>task</th><th>agent</th><th>verdict</th><th>iters</th>
+          <th>tokens</th><th>seconds</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </figure>
+</main>
+
+<script>
+const A = "#00539b", B = "#b0322c";
+let charts = [];
+
+async function loadRuns() {
+  const runs = await (await fetch("/api/runs")).json();
+  const sel = document.getElementById("run-select");
+  for (const r of runs) {
+    const o = document.createElement("option");
+    o.value = r.run_id;
+    const res = r.results ? ` [${r.results?.kimi?.solved ?? "?"}:${r.results?.altar?.solved ?? "?"}]` : "";
+    o.textContent = `${r.run_id} (${r.status}, ${r.n_tasks} tasks)${res}`;
+    sel.appendChild(o);
+  }
+  sel.onchange = () => sel.value && render(sel.value);
+}
+
+const t0 = evs => evs.length ? Date.parse(evs[0].ts) : 0;
+const mins = (ts, base) => (Date.parse(ts) - base) / 60000;
+
+function series(evs, kind) {  // cumulative count of `kind` over minutes
+  const base = t0(evs); let n = 0;
+  return evs.filter(e => e.kind === kind)
+            .map(e => ({ x: mins(e.ts, base), y: ++n }));
+}
+
+function tokenSeries(evs) {
+  const base = t0(evs);
+  return evs.filter(e => e.kind === "budget_update" && e.payload && e.payload.cum_tokens != null)
+            .map(e => ({ x: mins(e.ts, base), y: e.payload.cum_tokens }));
+}
+
+function rateSeries(evs, kind) {  // per-minute rate, 2-min window
+  const base = t0(evs);
+  const ts = evs.filter(e => e.kind === kind).map(e => mins(e.ts, base));
+  if (!ts.length) return [];
+  const out = [];
+  for (let m = 0; m <= ts[ts.length - 1]; m += 0.5) {
+    const lo = m - 2;
+    out.push({ x: m, y: ts.filter(t => t >= lo && t < m).length / 2 });
+  }
+  return out;
+}
+
+function verdicts(evs) {
+  const base = t0(evs);
+  return evs.filter(e => e.kind === "verdict" && e.payload && e.payload.exit_code)
+            .map(e => ({ x: mins(e.ts, base), exit: e.payload.exit_code }));
+}
+
+function agentTable(evs, side) {
+  const rows = [];
+  let cur = null;
+  for (const e of evs) {
+    if (e.kind === "task_assign") {
+      if (cur) rows.push(cur);
+      cur = { task: e.task_id, iters: 0, tokens: 0, t0: e.ts, t1: e.ts,
+              solved: null, submits: 0 };
+    } else if (!cur) continue;
+    cur.t1 = e.ts;
+    if (e.kind === "llm_response") cur.iters++;
+    if (e.kind === "budget_update" && e.payload) cur.tokens = e.payload.cum_tokens;
+    if (e.kind === "verdict") { cur.submits++; if (e.payload && e.payload.exit_code) cur.solved = true; }
+    if (e.kind === "run_end") { if (cur.solved === null) cur.solved = false; rows.push(cur); cur = null; }
+  }
+  if (cur) rows.push(cur);
+  return rows.map(r => ({ ...r, side,
+      secs: Math.round((Date.parse(r.t1) - Date.parse(r.t0)) / 1000) }));
+}
+
+function mk(id, cfg) { charts.push(new Chart(document.getElementById(id), cfg)); }
+
+function lineCfg(label, datasets, xlab, ylab) {
+  return {
+    type: "line",
+    data: { datasets },
+    options: {
+      animation: false, responsive: true, maintainAspectRatio: false,
+      interaction: { mode: "nearest", intersect: false },
+      scales: {
+        x: { type: "linear", title: { display: true, text: xlab },
+             grid: { color: "#e3e8ee" } },
+        y: { beginAtZero: true, title: { display: true, text: ylab },
+             grid: { color: "#e3e8ee" } }
+      },
+      plugins: {
+        legend: { position: "top",
+                  labels: { font: { family: "Georgia", size: 12 } } },
+        title: { display: true, text: label,
+                 font: { family: "Georgia", size: 14, weight: "normal" } }
+      },
+      elements: { point: { radius: 0 }, line: { borderWidth: 1.6, tension: 0.15 } }
+    }
+  };
+}
+
+function ds(label, color, data, dash) {
+  return { label, data, borderColor: color, borderDash: dash || [],
+           backgroundColor: color, stepped: false };
+}
+
+async function render(runId) {
+  charts.forEach(c => c.destroy()); charts = [];
+  const load = async s => {
+    const r = await fetch(`/api/runs/${runId}/events/${s}`);
+    if (!r.ok) return [];
+    return (await r.text()).trim().split("\n").filter(Boolean).map(JSON.parse);
+  };
+  const [kimi, altar, man] = await Promise.all([
+    load("kimi"), load("altar"),
+    fetch(`/api/runs/${runId}/manifest`).then(r => r.ok ? r.json() : null),
+  ]);
+  document.getElementById("empty").hidden = true;
+
+  const nameFor = s => prettyModel(man?.sides?.[s]?.model, s);
+  let kn = nameFor("kimi"), an = nameFor("altar");
+  if (kn === an) { kn += " — A"; an += " — B"; }
+
+  // Figure 1 — iterations
+  document.getElementById("fig1").hidden = false;
+  mk("c-iters", lineCfg("Agent turns over time", [
+    ds(kn, A, series(kimi, "llm_response")),
+    ds(an, B, series(altar, "llm_response"), [6, 3]),
+  ], "elapsed time (min)", "cumulative iterations"));
+
+  // Figure 2 — tokens
+  document.getElementById("fig2").hidden = false;
+  mk("c-tokens", lineCfg("Token consumption over time", [
+    ds(kn, A, tokenSeries(kimi)),
+    ds(an, B, tokenSeries(altar), [6, 3]),
+  ], "elapsed time (min)", "cumulative tokens"));
+
+  // Figure 3 — tool-call rate
+  document.getElementById("fig3").hidden = false;
+  mk("c-activity", lineCfg("Command execution rate", [
+    ds(kn, A, rateSeries(kimi, "tool_call")),
+    ds(an, B, rateSeries(altar, "tool_call"), [6, 3]),
+  ], "elapsed time (min)", "tool calls / min (2-min window)"));
+
+  // Table 1 — per-task outcomes
+  document.getElementById("fig4").hidden = false;
+  const tb = document.querySelector("#outcomes tbody");
+  tb.innerHTML = "";
+  const rows = [
+    ...agentTable(kimi, "A").map(r => ({ ...r, side: "A" })),
+    ...agentTable(altar, "B").map(r => ({ ...r, side: "B" })),
+  ];
+  rows.sort((a, b) => a.task.localeCompare(b.task) || a.side.localeCompare(b.side));
+  for (const r of rows) {
+    const tr = document.createElement("tr");
+    const verdict = r.solved ? "✓ solved" : (r.submits ? "✗ (%d submits)".replace("%d", r.submits) : "✗");
+    tr.innerHTML = `<td>${r.task}</td><td>${r.side}</td><td>${verdict}</td>
+                    <td>${r.iters}</td><td>${r.tokens}</td><td>${r.secs}</td>`;
+    tb.appendChild(tr);
+  }
+  document.getElementById("score").textContent =
+    `${runId} — ${rows.filter(r => r.solved).length}/${rows.length} solves`;
+}
+
+loadRuns();
+</script>
+</body>
+</html>
