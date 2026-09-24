@@ -213,7 +213,7 @@ def main():
         ]
         t0 = time.time()
         for it in range(1, args.max_iters + 1):
-            if time.time() - t0 > args.timeout:
+            if args.timeout > 0 and time.time() - t0 > args.timeout:
                 ev("run_end", summary="timeout", payload={"iters": it})
                 break
             try:
@@ -227,7 +227,7 @@ def main():
             ev("budget_update", payload={"cum_tokens": cum_tokens,
                                          "max_tokens": args.max_tokens})
             log("assistant", reply, usage=usage, cum_tokens=cum_tokens)
-            if cum_tokens > args.max_tokens:
+            if args.max_tokens > 0 and cum_tokens > args.max_tokens:
                 ev("run_end", summary="token budget exceeded",
                    payload={"cum_tokens": cum_tokens})
                 break

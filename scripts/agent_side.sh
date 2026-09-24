@@ -32,9 +32,9 @@ while IFS= read -r task; do
     --events-dir "$EVENTS_DIR" \
     --base-url "${AGENT_BASE_URL:-https://api.adverserial.ai/v1}" \
     --model "${AGENT_MODEL:-lordx64/cyberkimi}" \
-    --max-iters "${MAX_STEPS:-40}" \
-    --timeout "${TIMEOUT_S:-1800}" \
-    --max-tokens "${MAX_TOKENS:-300000}" \
+    --max-iters "${MAX_STEPS:-100000}" \
+    --timeout "${TIMEOUT_S:-0}" \
+    --max-tokens "${MAX_TOKENS:-0}" \
     >> "$LOG_DIR/agent.log" 2>&1
   echo "[agent_side] $SIDE finished $task rc=$?"
 done < "$TASK_LIST"
