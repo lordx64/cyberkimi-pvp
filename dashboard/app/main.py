@@ -56,6 +56,13 @@ def _run_dir(run_id: str) -> Path:
 def healthz():
     return {"ok": True}
 
+from fastapi.responses import RedirectResponse
+
+
+@app.get("/research-view")
+def research_view():
+    return RedirectResponse("/graphs.html", status_code=308)
+
 
 @app.get("/api/runs")
 def list_runs():
