@@ -35,8 +35,9 @@
 <header>
   <h1>CYBERPVP <span>— research view</span></h1>
   <nav>
-    <a href="/">live arena</a>
+    <a href="/index.html">live arena</a>
     <a href="/graphs.html"><b>research</b></a>
+    <a href="/about.html">what is this?</a>
   </nav>
   <select id="run-select"><option value="">— select a match —</option></select>
   <div id="score"></div>
@@ -109,6 +110,13 @@ async function loadRuns() {
     sel.appendChild(o);
   }
   sel.onchange = () => sel.value && render(sel.value);
+  // auto-load the newest match (landing page behavior)
+  if (runs.length && !sel.value) {
+    sel.value = runs[0].run_id;
+    render(runs[0].run_id);
+  }
+  // while a match is running, re-render periodically
+  setInterval(() => { if (sel.value) render(sel.value); }, 30000);
 }
 
 const t0 = evs => evs.length ? Date.parse(evs[0].ts) : 0;
