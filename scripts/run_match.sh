@@ -56,7 +56,8 @@ cat > "$BUNDLE/manifest.json" <<EOF
     "agent_framework": "${AGENT_FRAMEWORK:-unset}",
     "scaffolding": "${SCAFFOLDING_DESC:-unset}"
   },
-  "budget": { "max_steps": ${MAX_STEPS:-40}, "timeout_s": ${TIMEOUT_S:-1800}, "max_tokens": ${MAX_TOKENS:-300000}, "usd_cap": ${USD_CAP:-25} },
+  "budget": { "max_steps": ${MAX_STEPS:-100000}, "timeout_s": ${TIMEOUT_S:-0}, "max_tokens": ${MAX_TOKENS:-0}, "usd_cap": null,
+    "_note": "0/null = unbounded (per operator request). Iteration count, wall time and tokens are metered and published per task." },
   "seed": ${SEED:-0},
   "_seed_note": "0 = uncontrolled; sampling params are the API default for both sides",
   "results": null

@@ -288,6 +288,24 @@ async function render(runId) {
                     <td>${r.iters}</td><td>${r.tokens}</td><td>${r.secs}</td>`;
     tb.appendChild(tr);
   }
+  // totals row per side
+  for (const s of ["A", "B"]) {
+    const sideRows = rows.filter(r => r.side === s);
+    if (!sideRows.length) continue;
+    const tot = {
+      solved: sideRows.filter(r => r.solved).length,
+      iters: sideRows.reduce((a, r) => a + (r.iters || 0), 0),
+      tokens: sideRows.reduce((a, r) => a + (r.tokens || 0), 0),
+      secs: sideRows.reduce((a, r) => a + (r.secs || 0), 0),
+    };
+    const tr = document.createElement("tr");
+    tr.style.fontWeight = "bold";
+    tr.style.background = "#eef2f6";
+    tr.innerHTML = `<td>TOTAL (${s})</td><td>${s}</td>
+      <td>${tot.solved}/${sideRows.length} solved</td>
+      <td>${tot.iters}</td><td>${tot.tokens}</td><td>${tot.secs}</td>`;
+    tb.appendChild(tr);
+  }
   document.getElementById("score").textContent =
     `${runId} — ${rows.filter(r => r.solved).length}/${rows.length} solves`;
 }
