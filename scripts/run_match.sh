@@ -99,7 +99,8 @@ python3 "$OPS_REPO_DIR/tools/collect_traces.py" \
   --run "$RUN_ID" \
   --kimi-logdir "$RUN_DIR/kimi" \
   --altar-logdir "$RUN_DIR/altar" \
-  --traces-root "$BASE/traces"
+  --traces-root "$BASE/traces" \
+  --skip-checksums
 
 # finalize manifest status (results stay null until verified PoC scoring is run)
 python3 - "$BUNDLE/manifest.json" <<'PY'
@@ -109,6 +110,10 @@ m = json.load(open(p))
 m["status"] = "complete"
 json.dump(m, open(p, "w"), indent=2)
 PY
+
+# checksums LAST, over the final bundle state
+python3 "$OPS_REPO_DIR/tools/collect_traces.py" \
+  --run "$RUN_ID" --traces-root "$BASE/traces" --checksums-only
 
 echo "bundle: $BUNDLE"
 echo "NOTE: verify PoCs with upstream scripts/verify_agent_result.py, then git add+commit+push traces/$RUN_ID"
