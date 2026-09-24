@@ -64,6 +64,12 @@ def research_view():
     return RedirectResponse("/graphs.html", status_code=308)
 
 
+@app.get("/", include_in_schema=False)
+def root():
+    # land directly on the research view; the live arena lives at /index.html
+    return RedirectResponse("/graphs.html", status_code=308)
+
+
 @app.get("/api/runs")
 def list_runs():
     return _runs()

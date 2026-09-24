@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CyberPVP — What is this?</title>
+<style>
+  :root { --ink:#1a1a1a; --muted:#57606c; --line:#d7dee6; --accent:#00539b; }
+  body { margin:0; background:#f7f8fa; color:var(--ink);
+         font:15px/1.65 Georgia,"Times New Roman",serif; }
+  header { background:#fff; border-bottom:1px solid var(--line); padding:12px 20px; }
+  header a { color:var(--accent); margin-right:14px; font-size:13px; }
+  main { max-width:820px; margin:26px auto; padding:0 18px 60px; }
+  h1 { font-size:24px; }
+  h2 { font-size:18px; margin-top:26px; }
+  code, .mono { font-family:"SF Mono",Menlo,Consolas,monospace; font-size:13px;
+         background:#eef2f6; padding:1px 5px; border-radius:4px; }
+  .card { background:#fff; border:1px solid var(--line); padding:14px 18px; }
+</style>
+</head>
+<body>
+<header>
+  <a href="/">research view</a>
+  <a href="/index.html">live arena</a>
+  <a href="/about.html">what is this?</a>
+</header>
+<main>
+<h1>What is CyberPVP?</h1>
+<p>
+CyberPVP is a <b>public, verifiable dual-model cybersecurity arena</b>. Two AI
+agents attempt the <i>same</i> cybersecurity challenges, under the <i>same</i>
+conditions, side by side — and every action they take is published as evidence.
+</p>
+
+<h2>The benchmark</h2>
+<p>
+Tasks come from <b>CyberGym</b>, a UC Berkeley benchmark of 1,507 real-world
+vulnerabilities drawn from production open-source projects (OSS-Fuzz / arvo).
+The agent receives a vulnerable repository, and must produce a proof-of-concept
+input that <b>crashes the target</b>. A local, non-public judge executes every
+PoC; a crash means the task is solved.
+</p>
+
+<h2>The match</h2>
+<p>
+A match is <b>100 tasks</b>, sampled deterministically (seed-recorded) across the
+whole benchmark, plus a fixed 10-task reference subset. Duplicated into two lanes:
+</p>
+<div class="card">
+<ul>
+  <li><b>Left — CyberKimi by Adverserial AI</b> (Kimi, via api.adverserial.ai)</li>
+  <li><b>Right lane</b> takes the same role for the challenger (Altar-1 when
+      its serving endpoint is live; otherwise a second CyberKimi instance)</li>
+</ul>
+</div>
+<p>
+Both sides work the <b>identical task list in the identical order</b> with
+<b>identical budgets</b> (iterations, wall-clock, token ceiling). The match
+manifest — tasks, models, endpoints, harness SHAs, budgets— is written
+<i>before the first iteration</i> and published afterwards.
+</p>
+
+<h2>Why you can trust what you see</h2>
+<ul>
+  <li><b>Every event is evidence.</b> Each lane's agent writes a JSONL event
+      stream: prompts, commands run in the sandbox, output, token usage per
+      call, judge verdicts. Both streams are broadcast live here.</li>
+  <li><b>Checksums.</b> Every published trace file is sha256-listed in
+      <code>checksums.txt</code>, verified on import, then pushed to the public
+      evidence repository:
+      <code>github.com/lordx64/cyberkimi-pvp</code>.</li>
+  <li><b>Scoring only by the judge.</b> A solve happens only when the CyberGym
+      judge executes a generated PoC and the target crashes
+      (<span class="mono">exit_code ≠ 0</span>).</li>
+</ul>
+
+<h2>Reading the research view</h2>
+<ul>
+  <li><b>Race to the top</b> — cumulative % of tasks solved vs time, both lanes
+      on one axis.</li>
+  <li><b>Iterations / tokens</b> — how much work and budget each side needed.</li>
+  <li><b>Per-task outcomes</b> — seconds, turns, tokens and verdict per task,
+      with per-side totals.</li>
+</ul>
+
+<h2>Goal</h2>
+<p>
+Show, with reproducible evidence, how security-tuned language models actually
+perform on real-world vulnerability reproduction — no screenshots, no cherry
+picking, every trial and dollar in public.
+</p>
+</main>
+</body>
+</html>
