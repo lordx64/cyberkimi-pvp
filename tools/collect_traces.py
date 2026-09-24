@@ -48,17 +48,28 @@ def copy_side(src: Path, dst: Path) -> int:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", required=True, help="run id, e.g. 2026-09-25T18-00Z-kimi-vs-altar")
-    ap.add_argument("--kimi-logdir", required=True, type=Path)
-    ap.add_argument("--altar-logdir", required=True, type=Path)
+    ap.add_argument("--kimi-logdir", required=False, type=Path)
+    ap.add_argument("--altar-logdir", required=False, type=Path)
     ap.add_argument("--traces-root", type=Path, default=Path("/data/cyberpvp/traces"))
+    ap.add_argument("--skip-checksums", action="store_true",
+                    help="copy raw evidence but do not write checksums.txt yet")
+    ap.add_argument("--checksums-only", action="store_true",
+                    help="(re)write checksums.txt over current bundle contents only")
     args = ap.parse_args()
 
     bundle = args.traces_root / args.run
     bundle.mkdir(parents=True, exist_ok=True)
 
     n = 0
-    for side, src in (("kimi", args.kimi_logdir), ("altar", args.altar_logdir)):
-        n += copy_side(src, bundle / "raw" / side)
+    if not args.checksums_only:
+        for side, src in (("kimi", args.kimi_logdir), ("altar", args.altar_logdir)):
+            if src is None:
+                ap.error(f"--{side}-logdir required unless --checksums-only")
+            n += copy_side(src, bundle / "raw" / side)
+
+    if args.skip_checksums:
+        print(f"copied {n} files into {bundle} (checksums deferred)")
+        return
 
     lines = []
     for root, _, files in os.walk(bundle):
