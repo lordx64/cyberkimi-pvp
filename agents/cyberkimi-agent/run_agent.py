@@ -61,10 +61,16 @@ class ChatClient:
         )
         try:
             with urllib.request.urlopen(req, timeout=300) as r:
-                return json.load(r)["choices"][0]["message"]["content"]
+                data = json.load(r)
         except Exception as e:
             self.log(f"chat error: {e}")
             raise
+        usage = data.get("usage") or {}
+        return data["choices"][0]["message"]["content"], {
+            "prompt": usage.get("prompt_tokens", 0),
+            "completion": usage.get("completion_tokens", 0),
+            "total": usage.get("total_tokens", 0),
+        }
 
 class Container:
     def __init__(self, image, workdir):
@@ -131,6 +137,8 @@ def main():
     ap.add_argument("--max-iters", type=int, default=40)
     ap.add_argument("--timeout", type=int, default=1800)
     ap.add_argument("--max-cmd-timeout", type=int, default=120)
+    ap.add_argument("--max-tokens", type=int, default=300000,
+                    help="hard cumulative token cap per side per task")
     args = ap.parse_args()
 
     key = os.environ.get("CYBERKIMI_API_KEY") or os.environ.get("CYBERKIMI_KEY")
@@ -186,6 +194,7 @@ def main():
                                 "content": content, **extra}) + "\n")
 
     solved = False
+    cum_tokens = 0
     try:
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
@@ -197,9 +206,16 @@ def main():
             if time.time() - t0 > args.timeout:
                 ev("run_end", summary="timeout", payload={"iters": it})
                 break
-            reply = client.chat(messages)
+            reply, usage = client.chat(messages)
+            cum_tokens += usage["total"]
             ev("llm_response", summary=f"iter {it}: {reply[:120]!r}")
-            log("assistant", reply)
+            ev("budget_update", payload={"cum_tokens": cum_tokens,
+                                         "max_tokens": args.max_tokens})
+            log("assistant", reply, usage=usage, cum_tokens=cum_tokens)
+            if cum_tokens > args.max_tokens:
+                ev("run_end", summary="token budget exceeded",
+                   payload={"cum_tokens": cum_tokens})
+                break
             messages.append({"role": "assistant", "content": reply})
             cmds = extract_cmds(reply)
             if not cmds:

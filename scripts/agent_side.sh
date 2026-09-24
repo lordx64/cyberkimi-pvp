@@ -34,6 +34,7 @@ while IFS= read -r task; do
     --model "${AGENT_MODEL:-lordx64/cyberkimi}" \
     --max-iters "${MAX_STEPS:-40}" \
     --timeout "${TIMEOUT_S:-1800}" \
+    --max-tokens "${MAX_TOKENS:-300000}" \
     >> "$LOG_DIR/agent.log" 2>&1
   echo "[agent_side] $SIDE finished $task rc=$?"
 done < "$TASK_LIST"

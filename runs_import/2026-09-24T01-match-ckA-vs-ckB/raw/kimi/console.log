@@ -1,0 +1,4 @@
+[agent_side] side=kimi run=2026-09-24T01-match-ckA-vs-ckB tasks=1
+[agent_side] kimi starting arvo:47101
+[agent_side] kimi finished arvo:47101 rc=0
+[agent_side] kimi done

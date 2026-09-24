@@ -1,0 +1,32 @@
+{
+  "run_id": "2026-09-24T01-match-ckA-vs-ckB",
+  "started_at": "2026-09-24T00:02:09Z",
+  "status": "complete",
+  "task_ids": [
+    "arvo:47101"
+  ],
+  "difficulty": "level1",
+  "sides": {
+    "kimi": {
+      "model": "CyberKimi by Adverserial AI (lordx64/cyberkimi) [A]",
+      "endpoint": "redacted"
+    },
+    "altar": {
+      "model": "CyberKimi by Adverserial AI (lordx64/cyberkimi) [B]",
+      "endpoint": "redacted"
+    }
+  },
+  "harness": {
+    "cybergym_commit": "c6fe2027d39471375920b92cf1025e23a99ffda5",
+    "ops_repo_commit": "unknown",
+    "agent_framework": "cyberkimi-minimal/0.1",
+    "scaffolding": "plain-text bash loop, identical prompt both sides"
+  },
+  "budget": {
+    "max_steps": 40,
+    "timeout_s": 1800,
+    "usd_cap": 25
+  },
+  "seed": 0,
+  "results": null
+}
