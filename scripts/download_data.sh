@@ -42,14 +42,22 @@ case "$MODE" in
   --subset)
     clone_dataset_repo
     echo "== pulling LFS payloads for subset tasks =="
+    # include patterns must be exact dir paths: data/<bench>/<id>/**
     INCLUDES=()
     while read -r t; do
       bench="${t%%:*}"; id="${t##*:}"
-      INCLUDES+=("data/$bench/**$id**")
+      INCLUDES+=("data/$bench/$id/**")
     done <<< "$SUBSET_TASKS"
     git lfs pull $(printf -- '--include="%s" ' "${INCLUDES[@]}")
-    echo "NOTE: verify per-task folders exist under $DATASET_DIR/data;"
-    echo "      if the layout differs, check the tasks you need with: git lfs ls-files"
+    echo "== verifying payloads are real (not LFS pointers) =="
+    BAD=0
+    while read -r t; do
+      bench="${t%%:*}"; id="${t##*:}"
+      f="$DATASET_DIR/data/$bench/$id/repo-vul.tar.gz"
+      [ -f "$f" ] || { echo "MISSING $t"; BAD=1; continue; }
+      file -b "$f" | grep -q gzip || { echo "POINTER $t"; BAD=1; }
+    done <<< "$SUBSET_TASKS"
+    [ "$BAD" = 0 ] && echo "all subset payloads verified as real gzip data"
 
     echo "== downloading subset server images =="
     cd "$CYBERGYM_DIR"
