@@ -21,3 +21,6 @@ runs/
 
 # local import workspace (bundles go straight to traces/)
 runs_import/
+
+# nested VCS dirs inside published agent work trees
+**/.git/
