@@ -83,6 +83,14 @@
 const A = "#00539b", B = "#b0322c";
 let charts = [];
 
+function prettyModel(m, fallback) {
+  if (!m) return fallback;
+  const s = m.toLowerCase();
+  if (s.includes("cyberkimi")) return "CyberKimi by Adverserial AI";
+  if (s.includes("altar")) return "ALTAR-1";
+  return m;
+}
+
 async function loadRuns() {
   const runs = await (await fetch("/api/runs")).json();
   const sel = document.getElementById("run-select");
