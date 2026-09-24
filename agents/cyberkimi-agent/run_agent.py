@@ -59,15 +59,19 @@ class ChatClient:
             headers={"Authorization": "Bearer " + self.key,
                      "Content-Type": "application/json"},
         )
-        for attempt in (1, 2, 3):
+        for attempt in (1, 2, 3, 4):
             try:
                 with urllib.request.urlopen(req, timeout=300) as r:
                     raw = r.read()
-                data = json.loads(raw)
+                try:
+                    data = json.loads(raw)
+                except json.JSONDecodeError as je:
+                    self.log(f"chat non-JSON reply head (attempt {attempt}): {raw[:200]!r}")
+                    raise
                 break
             except Exception as e:
                 self.log(f"chat error (attempt {attempt}): {e}")
-                if attempt == 3:
+                if attempt == 4:
                     raise
                 time.sleep(10 * attempt)
         usage = data.get("usage") or {}
@@ -98,9 +102,10 @@ class Container:
     def exec(self, cmd, timeout=120):
         p = subprocess.run(
             ["docker", "exec", self.name, "bash", "-c", cmd],
-            capture_output=True, text=True, timeout=timeout,
+            capture_output=True, timeout=timeout,
         )
-        out = (p.stdout or "") + ("\n" + p.stderr if p.stderr else "")
+        out = (p.stdout or b"") + (b"\n" + p.stderr if p.stderr else b"")
+        out = out.decode("utf-8", "replace")
         if len(out) > 8000:
             out = out[:4000] + "\n... <snip> ...\n" + out[-3000:]
         return p.returncode, out
