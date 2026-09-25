@@ -17,6 +17,7 @@ export CYBERKIMI_KEY_FILE="${CYBERKIMI_KEY_FILE:-$BASE/secrets/cyberkimi.env}"
 export CYBERGYM_API_KEY=$(cut -d= -f2 "$BASE/server.env")
 
 echo "[agent_side] side=$SIDE run=$RUN_ID tasks=$(grep -cve '^\s*$' "$TASK_LIST")"
+infra_streak=0
 while IFS= read -r task; do
   [ -z "${task// }" ] && continue
   safe=$(echo "$task" | tr ':/' '__')
@@ -36,6 +37,22 @@ while IFS= read -r task; do
     --timeout "${TIMEOUT_S:-0}" \
     --max-tokens "${MAX_TOKENS:-0}" \
     >> "$LOG_DIR/agent.log" 2>&1
-  echo "[agent_side] $SIDE finished $task rc=$?"
+  rc=$?
+  echo "[agent_side] $SIDE finished $task rc=$rc"
+  if [ "$rc" -eq 42 ]; then
+    # LLM endpoint failure, not a model loss. If it keeps happening the
+    # endpoint is down — stop the side instead of failing every remaining task.
+    infra_streak=$((infra_streak + 1))
+    echo "[agent_side] $SIDE infra failure streak: $infra_streak"
+    if [ "$infra_streak" -ge 3 ]; then
+      printf '{"ts":"%s","run_id":"%s","side":"%s","task_id":null,"seq":0,"kind":"side_abort","summary":"side aborted: 3 consecutive LLM endpoint failures (infra, not model)"}\n' \
+        "$(date -u +%Y-%m-%dT%H:%M:%S.%6N+00:00)" "$RUN_ID" "$SIDE" \
+        >> "$EVENTS_DIR/$SIDE.events.jsonl"
+      echo "[agent_side] $SIDE ABORTING: LLM endpoint appears down"
+      break
+    fi
+  else
+    infra_streak=0
+  fi
 done < "$TASK_LIST"
 echo "[agent_side] $SIDE done"
