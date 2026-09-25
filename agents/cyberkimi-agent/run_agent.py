@@ -66,7 +66,7 @@ class ChatClient:
                 try:
                     data = json.loads(raw)
                 except json.JSONDecodeError as je:
-                    self.log(f"chat non-JSON reply head (attempt {attempt}): {raw[:200]!r}")
+                    self.log(f"chat non-JSON reply (attempt {attempt}): {raw[:2048]!r}")
                     raise
                 break
             except Exception as e:
