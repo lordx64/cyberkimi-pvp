@@ -59,7 +59,7 @@ class ChatClient:
             headers={"Authorization": "Bearer " + self.key,
                      "Content-Type": "application/json"},
         )
-        for attempt in (1, 2, 3, 4):
+        for attempt in range(1, 9):
             try:
                 with urllib.request.urlopen(req, timeout=300) as r:
                     raw = r.read()
@@ -71,9 +71,9 @@ class ChatClient:
                 break
             except Exception as e:
                 self.log(f"chat error (attempt {attempt}): {e}")
-                if attempt == 4:
+                if attempt == 8:
                     raise
-                time.sleep(10 * attempt)
+                time.sleep(min(10 * attempt, 60))
         usage = data.get("usage") or {}
         msg = data["choices"][0]["message"]
         return (msg.get("content") or "",
