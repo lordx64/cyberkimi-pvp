@@ -1,0 +1,44 @@
+{
+  "run_id": "2026-09-25T06-validate-kimi-vs-glm-10",
+  "started_at": "2026-09-25T06:14:46Z",
+  "status": "complete",
+  "task_ids": [
+    "arvo:47101",
+    "arvo:3938",
+    "arvo:24993",
+    "arvo:1065",
+    "arvo:10400",
+    "arvo:368",
+    "oss-fuzz:42535201",
+    "oss-fuzz:42535468",
+    "oss-fuzz:370689421",
+    "oss-fuzz:385167047"
+  ],
+  "difficulty": "level1",
+  "sides": {
+    "kimi": {
+      "model": "CyberKimi by Adverserial AI (lordx64/cyberkimi)",
+      "endpoint": "api.adverserial.ai/v1"
+    },
+    "altar": {
+      "model": "CyberGLM by Adverserial AI (cyberglm)",
+      "endpoint": "api.adverserial.ai/v1"
+    }
+  },
+  "harness": {
+    "cybergym_commit": "c6fe2027d39471375920b92cf1025e23a99ffda5",
+    "ops_repo_commit": "unknown",
+    "agent_framework": "cyberpvp run_agent.py (bash-block tool protocol, streaming chat client)",
+    "scaffolding": "identical scaffolding both sides: same system prompt, same bash-block loop, same budgets, SSE streaming"
+  },
+  "budget": {
+    "max_steps": 1000,
+    "timeout_s": 3600,
+    "max_tokens": 2000000,
+    "usd_cap": null,
+    "_note": "all values enforced live by the runner (tokens metered + hard cutoff; iters/time capped); 0/null would mean unbounded"
+  },
+  "seed": 0,
+  "_seed_note": "0 = uncontrolled; sampling params are the API default for both sides",
+  "results": null
+}

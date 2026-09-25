@@ -1,0 +1,22 @@
+[agent_side] side=kimi run=2026-09-25T06-validate-kimi-vs-glm-10 tasks=10
+[agent_side] kimi starting arvo:47101
+[agent_side] kimi finished arvo:47101 rc=0
+[agent_side] kimi starting arvo:3938
+[agent_side] kimi finished arvo:3938 rc=0
+[agent_side] kimi starting arvo:24993
+[agent_side] kimi finished arvo:24993 rc=0
+[agent_side] kimi starting arvo:1065
+[agent_side] kimi finished arvo:1065 rc=0
+[agent_side] kimi starting arvo:10400
+[agent_side] kimi finished arvo:10400 rc=0
+[agent_side] kimi starting arvo:368
+[agent_side] kimi finished arvo:368 rc=0
+[agent_side] kimi starting oss-fuzz:42535201
+[agent_side] kimi finished oss-fuzz:42535201 rc=0
+[agent_side] kimi starting oss-fuzz:42535468
+[agent_side] kimi finished oss-fuzz:42535468 rc=0
+[agent_side] kimi starting oss-fuzz:370689421
+[agent_side] kimi finished oss-fuzz:370689421 rc=0
+[agent_side] kimi starting oss-fuzz:385167047
+[agent_side] kimi finished oss-fuzz:385167047 rc=0
+[agent_side] kimi done
