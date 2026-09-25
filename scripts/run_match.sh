@@ -97,6 +97,9 @@ wait $PID_ALTAR || RC_A=$?
 echo "exit codes: kimi=$RC_K altar=$RC_A"
 
 # --- collect raw evidence ---------------------------------------------------------
+# agents create root-owned files inside their containers; the collector runs as
+# ubuntu, so make the run dir readable first or copy dies on PermissionError
+sudo chmod -R a+rX "$RUN_DIR" 2>/dev/null || true
 python3 "$OPS_REPO_DIR/tools/collect_traces.py" \
   --run "$RUN_ID" \
   --kimi-logdir "$RUN_DIR/kimi" \
