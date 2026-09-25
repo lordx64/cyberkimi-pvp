@@ -40,6 +40,11 @@ Rules:
 def ts():
     return datetime.now(timezone.utc).isoformat()
 
+class CreditsExhausted(Exception):
+    """The gateway rejected the request for lack of credit (429 membership_limit).
+    Retrying is pointless until someone tops up the wallet."""
+
+
 class ChatClient:
     def __init__(self, base, key, model, log):
         self.base = base.rstrip("/")
@@ -52,6 +57,11 @@ class ChatClient:
             "model": self.model,
             "messages": messages,
             "max_tokens": 4096,
+            # streaming keeps bytes flowing: the gateway kills any request that
+            # produces no output for ~30s (Heroku-style router timeout), which a
+            # big non-streaming generation always hits.
+            "stream": True,
+            "stream_options": {"include_usage": True},
         }).encode()
         req = urllib.request.Request(
             self.base + "/chat/completions",
@@ -61,28 +71,67 @@ class ChatClient:
         )
         for attempt in range(1, 9):
             try:
+                content, reasoning, usage = [], [], {}
                 with urllib.request.urlopen(req, timeout=300) as r:
-                    raw = r.read()
-                try:
-                    data = json.loads(raw)
-                except json.JSONDecodeError as je:
-                    self.log(f"chat non-JSON reply (attempt {attempt}): {raw[:2048]!r}")
-                    raise
+                    ct = r.headers.get("Content-Type", "")
+                    if "text/event-stream" not in ct:
+                        raw = r.read()
+                        self.log(f"chat non-SSE reply (attempt {attempt}): {raw[:2048]!r}")
+                        raise ValueError(f"non-SSE reply, content-type {ct!r}")
+                    for rawline in r:
+                        line = rawline.decode("utf-8", "replace").strip()
+                        if not line.startswith("data:"):
+                            continue
+                        data = line[5:].strip()
+                        if data == "[DONE]":
+                            break
+                        try:
+                            d = json.loads(data)
+                        except json.JSONDecodeError:
+                            continue
+                        if d.get("usage"):
+                            usage = d["usage"]
+                        ch = d.get("choices") or []
+                        if not ch:
+                            continue
+                        delta = ch[0].get("delta") or {}
+                        if delta.get("content"):
+                            content.append(delta["content"])
+                        if delta.get("reasoning_content"):
+                            reasoning.append(delta["reasoning_content"])
                 break
+            except urllib.error.HTTPError as e:
+                ebody = b""
+                try:
+                    ebody = e.read(500)
+                except Exception:
+                    pass
+                self.log(f"chat HTTP {e.code} (attempt {attempt}): {ebody!r}")
+                if e.code == 429 and b"credit" in ebody:
+                    raise CreditsExhausted(ebody.decode("utf-8", "replace"))
+                if attempt == 8:
+                    raise
+                time.sleep(min(10 * attempt, 60))
             except Exception as e:
                 self.log(f"chat error (attempt {attempt}): {e}")
                 if attempt == 8:
                     raise
                 time.sleep(min(10 * attempt, 60))
-        usage = data.get("usage") or {}
-        msg = data["choices"][0]["message"]
-        return (msg.get("content") or "",
-                msg.get("reasoning_content") or "",
-                {
-                    "prompt": usage.get("prompt_tokens", 0),
-                    "completion": usage.get("completion_tokens", 0),
-                    "total": usage.get("total_tokens", 0),
-                })
+        reply = "".join(content)
+        if not usage:
+            # no usage chunk from the server: estimate so the budget brake still
+            # works (chars/4), flagged in the transcript
+            est = sum(len(m["content"]) for m in messages) // 4
+            usage = {"prompt_tokens": est,
+                     "completion_tokens": len(reply) // 4,
+                     "total_tokens": est + len(reply) // 4,
+                     "estimated": True}
+        return (reply, "".join(reasoning), {
+            "prompt": usage.get("prompt_tokens", 0),
+            "completion": usage.get("completion_tokens", 0),
+            "total": usage.get("total_tokens", 0),
+            "estimated": bool(usage.get("estimated")),
+        })
 
 class Container:
     def __init__(self, image, workdir):
@@ -209,6 +258,7 @@ def main():
     solved = False
     cum_tokens = 0
     infra_fail = False
+    credits_dead = False
     try:
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
@@ -222,6 +272,14 @@ def main():
                 break
             try:
                 reply, reasoning, usage = client.chat(messages)
+            except CreditsExhausted as e:
+                # gateway says the wallet is empty: a human must top up.
+                # Stop the whole side immediately (exit 43).
+                ev("run_end", summary="infra_error: API credits exhausted (429)",
+                   payload={"infra": True, "iters": it})
+                infra_fail = True
+                credits_dead = True
+                break
             except Exception as e:
                 # endpoint-side failure (dead worker, non-JSON crash page, ...):
                 # NOT a model loss. Mark it and exit 42 so agent_side.sh can
@@ -274,6 +332,8 @@ def main():
             ev("run_end", summary="max iters reached", payload={"solved": solved})
     finally:
         container.stop()
+    if credits_dead:
+        sys.exit(43)
     if infra_fail:
         sys.exit(42)
 
