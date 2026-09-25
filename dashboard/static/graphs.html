@@ -74,7 +74,8 @@
   <figure id="fig4" hidden>
     <figcaption style="border-top:none"><b>Table 1.</b> Per-task outcomes: iteration count,
       cumulative tokens, wall-clock seconds, and final verdict per agent.
-      ✗ = budget exhausted without crash; ✓ = crash triggered (solved).</figcaption>
+      ✗ = budget exhausted without crash; ✓ = crash triggered (solved);
+      ⚠ infra = harness/endpoint failure, excluded from the score — not a model loss.</figcaption>
     <div style="max-height:420px; overflow-y:auto">
       <table id="outcomes">
         <thead><tr>
@@ -95,6 +96,7 @@ function prettyModel(m, fallback) {
   if (!m) return fallback;
   const s = m.toLowerCase();
   if (s.includes("cyberkimi")) return "CyberKimi by Adverserial AI";
+  if (s.includes("cyberglm")) return "CyberGLM by Adverserial AI";
   if (s.includes("altar")) return "ALTAR-1";
   return m;
 }
@@ -182,7 +184,13 @@ function agentTable(evs, side) {
     if (e.kind === "llm_response") cur.iters++;
     if (e.kind === "budget_update" && e.payload) cur.tokens = e.payload.cum_tokens;
     if (e.kind === "verdict") { cur.submits++; if (e.payload && e.payload.exit_code) cur.solved = true; }
-    if (e.kind === "run_end") { if (cur.solved === null) cur.solved = false; rows.push(cur); cur = null; }
+    if (e.kind === "run_end") {
+      if (cur.solved === null) cur.solved = false;
+      const sm = e.summary || "";
+      if ((e.payload && e.payload.infra) || sm.startsWith("infra_error") || sm.startsWith("api error"))
+        cur.infra = true;
+      rows.push(cur); cur = null;
+    }
   }
   if (cur) rows.push(cur);
   return rows.map(r => ({ ...r, side,
@@ -291,17 +299,20 @@ async function render(runId) {
   rows.sort((a, b) => a.task.localeCompare(b.task) || a.side.localeCompare(b.side));
   for (const r of rows) {
     const tr = document.createElement("tr");
-    const verdict = r.solved ? "✓ solved" : (r.submits ? "✗ (%d submits)".replace("%d", r.submits) : "✗");
+    const verdict = r.infra ? "⚠ infra — skipped"
+                  : r.solved ? "✓ solved"
+                  : (r.submits ? "✗ (%d submits)".replace("%d", r.submits) : "✗");
     tr.innerHTML = `<td>${r.task}</td><td>${r.side}</td><td>${verdict}</td>
                     <td>${r.iters}</td><td>${r.tokens}</td><td>${r.secs}</td>`;
     tb.appendChild(tr);
   }
-  // totals row per side
+  // totals row per side (infra failures excluded from the attempted count)
   for (const s of ["A", "B"]) {
     const sideRows = rows.filter(r => r.side === s);
     if (!sideRows.length) continue;
     const tot = {
       solved: sideRows.filter(r => r.solved).length,
+      infra: sideRows.filter(r => r.infra).length,
       iters: sideRows.reduce((a, r) => a + (r.iters || 0), 0),
       tokens: sideRows.reduce((a, r) => a + (r.tokens || 0), 0),
       secs: sideRows.reduce((a, r) => a + (r.secs || 0), 0),
@@ -310,7 +321,7 @@ async function render(runId) {
     tr.style.fontWeight = "bold";
     tr.style.background = "#eef2f6";
     tr.innerHTML = `<td>TOTAL (${s})</td><td>${s}</td>
-      <td>${tot.solved}/${sideRows.length} solved</td>
+      <td>${tot.solved}/${sideRows.length - tot.infra} solved${tot.infra ? ` (${tot.infra} infra-skipped)` : ""}</td>
       <td>${tot.iters}</td><td>${tot.tokens}</td><td>${tot.secs}</td>`;
     tb.appendChild(tr);
   }

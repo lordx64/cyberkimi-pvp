@@ -75,11 +75,14 @@ class ChatClient:
                     raise
                 time.sleep(10 * attempt)
         usage = data.get("usage") or {}
-        return data["choices"][0]["message"]["content"], {
-            "prompt": usage.get("prompt_tokens", 0),
-            "completion": usage.get("completion_tokens", 0),
-            "total": usage.get("total_tokens", 0),
-        }
+        msg = data["choices"][0]["message"]
+        return (msg.get("content") or "",
+                msg.get("reasoning_content") or "",
+                {
+                    "prompt": usage.get("prompt_tokens", 0),
+                    "completion": usage.get("completion_tokens", 0),
+                    "total": usage.get("total_tokens", 0),
+                })
 
 class Container:
     def __init__(self, image, workdir):
@@ -205,6 +208,7 @@ def main():
 
     solved = False
     cum_tokens = 0
+    infra_fail = False
     try:
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
@@ -217,16 +221,21 @@ def main():
                 ev("run_end", summary="timeout", payload={"iters": it})
                 break
             try:
-                reply, usage = client.chat(messages)
+                reply, reasoning, usage = client.chat(messages)
             except Exception as e:
-                ev("run_end", summary=f"api error: {type(e).__name__}",
-                   payload={"iters": it})
+                # endpoint-side failure (dead worker, non-JSON crash page, ...):
+                # NOT a model loss. Mark it and exit 42 so agent_side.sh can
+                # kill-switch the whole side instead of burning more tasks.
+                ev("run_end", summary=f"infra_error: {type(e).__name__}",
+                   payload={"infra": True, "iters": it})
+                infra_fail = True
                 break
             cum_tokens += usage["total"]
             ev("llm_response", summary=f"iter {it}: {reply[:120]!r}")
             ev("budget_update", payload={"cum_tokens": cum_tokens,
                                          "max_tokens": args.max_tokens})
-            log("assistant", reply, usage=usage, cum_tokens=cum_tokens)
+            log("assistant", reply, reasoning=reasoning, usage=usage,
+                cum_tokens=cum_tokens)
             if args.max_tokens > 0 and cum_tokens > args.max_tokens:
                 ev("run_end", summary="token budget exceeded",
                    payload={"cum_tokens": cum_tokens})
@@ -261,9 +270,12 @@ def main():
                             ev("run_end", summary="SOLVED",
                                payload={"task_id": args.task_id})
                             return
-        ev("run_end", summary="max iters reached", payload={"solved": solved})
+        else:
+            ev("run_end", summary="max iters reached", payload={"solved": solved})
     finally:
         container.stop()
+    if infra_fail:
+        sys.exit(42)
 
 
 if __name__ == "__main__":
