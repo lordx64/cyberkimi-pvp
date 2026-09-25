@@ -39,6 +39,14 @@ while IFS= read -r task; do
     >> "$LOG_DIR/agent.log" 2>&1
   rc=$?
   echo "[agent_side] $SIDE finished $task rc=$rc"
+  if [ "$rc" -eq 43 ]; then
+    # API credits exhausted: abort the side at once, retrying can't fix billing.
+    printf '{"ts":"%s","run_id":"%s","side":"%s","task_id":null,"seq":0,"kind":"side_abort","summary":"side aborted: API credits exhausted (429) - top up the wallet and rerun"}\n' \
+      "$(date -u +%Y-%m-%dT%H:%M:%S.%6N+00:00)" "$RUN_ID" "$SIDE" \
+      >> "$EVENTS_DIR/$SIDE.events.jsonl"
+    echo "[agent_side] $SIDE ABORTING: API credits exhausted"
+    break
+  fi
   if [ "$rc" -eq 42 ]; then
     # LLM endpoint failure, not a model loss. If it keeps happening the
     # endpoint is down — stop the side instead of failing every remaining task.
