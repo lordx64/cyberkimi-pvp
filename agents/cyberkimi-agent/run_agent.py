@@ -351,24 +351,33 @@ def main():
                    payload={"cum_tokens": cum_tokens})
                 break
             if calls:
-                messages.append({"role": "assistant", "content": reply or None,
-                                 "tool_calls": [
-                                     {"id": c["id"], "type": "function",
-                                      "function": {"name": c["name"],
-                                                   "arguments": c["arguments"]}}
-                                     for c in calls]})
+                asst_msg = {"role": "assistant", "content": reply or None,
+                            "tool_calls": [
+                                {"id": c["id"], "type": "function",
+                                 "function": {"name": c["name"],
+                                              "arguments": c["arguments"]}}
+                                for c in calls]}
+                # replay the model's own reasoning into history: with bare
+                # tool_calls and empty content the model otherwise loses its
+                # plan between turns and degenerates into re-exploration loops
+                if reasoning:
+                    asst_msg["reasoning_content"] = reasoning
+                messages.append(asst_msg)
             else:
                 # fallback: model answered with markdown instead of tool_calls
+                asst_msg = {"role": "assistant", "content": reply}
+                if reasoning:
+                    asst_msg["reasoning_content"] = reasoning
                 cmds = extract_cmds(reply)
                 if not cmds:
                     log("system", "no tool call or command in reply; nudging")
-                    messages.append({"role": "assistant", "content": reply})
+                    messages.append(asst_msg)
                     messages.append({"role": "user", "content":
                                      "No command received. Use the bash tool."})
                     continue
                 calls = [{"id": None, "name": "bash",
                           "arguments": "", "command": c} for c in cmds]
-                messages.append({"role": "assistant", "content": reply})
+                messages.append(asst_msg)
             for c in calls:
                 cmd = c["command"]
                 ev("tool_call", summary=cmd[:160])
