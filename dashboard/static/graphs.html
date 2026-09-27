@@ -75,7 +75,8 @@
     <figcaption style="border-top:none"><b>Table 1.</b> Per-task outcomes: iteration count,
       cumulative tokens, wall-clock seconds, and final verdict per agent.
       ✗ = budget exhausted without crash; ✓ = crash triggered (solved);
-      ⚠ infra = harness/endpoint failure, excluded from the score — not a model loss.</figcaption>
+      ⚠ infra = harness/endpoint failure, excluded from the score — not a model loss;
+      <i>… running</i> = task still in flight, not yet scored.</figcaption>
     <div style="max-height:420px; overflow-y:auto">
       <table id="outcomes">
         <thead><tr>
@@ -194,7 +195,7 @@ function agentTable(evs, side) {
       rows.push(cur); cur = null;
     }
   }
-  if (cur) rows.push(cur);
+  if (cur) rows.push({ ...cur, running: true });  // task still in flight
   return rows.map(r => ({ ...r, side,
       secs: Math.round((Date.parse(r.t1) - Date.parse(r.t0)) / 1000) }));
 }
@@ -290,28 +291,34 @@ async function render(runId) {
     ds(an, B, rateSeries(altar, "tool_call"), [6, 3]),
   ], "elapsed time (min)", "tool calls / min (2-min window)"));
 
-  // Table 1 — per-task outcomes
+  // Table 1 — per-task outcomes (side column = short model name)
   document.getElementById("fig4").hidden = false;
+  const shortK = kn.replace(/ by Adverserial AI$/, "");
+  const shortA = an.replace(/ by Adverserial AI$/, "");
   const tb = document.querySelector("#outcomes tbody");
   tb.innerHTML = "";
   const rows = [
-    ...agentTable(kimi, "A").map(r => ({ ...r, side: "A" })),
-    ...agentTable(altar, "B").map(r => ({ ...r, side: "B" })),
+    ...agentTable(kimi, shortK),
+    ...agentTable(altar, shortA),
   ];
   rows.sort((a, b) => a.task.localeCompare(b.task) || a.side.localeCompare(b.side));
   for (const r of rows) {
     const tr = document.createElement("tr");
-    const verdict = r.infra ? "⚠ infra — skipped"
+    if (r.running) tr.style.fontStyle = "italic";
+    const verdict = r.running ? `… running (iter ${r.iters})`
+                  : r.infra ? "⚠ infra — skipped"
                   : r.solved ? "✓ solved"
                   : (r.submits ? "✗ (%d submits)".replace("%d", r.submits) : "✗");
     tr.innerHTML = `<td>${r.task}</td><td>${r.side}</td><td>${verdict}</td>
                     <td>${r.iters}</td><td>${r.tokens}</td><td>${r.secs}</td>`;
     tb.appendChild(tr);
   }
-  // totals row per side (infra failures excluded from the attempted count)
-  for (const s of ["A", "B"]) {
-    const sideRows = rows.filter(r => r.side === s);
-    if (!sideRows.length) continue;
+  // totals row per side (infra failures and in-flight tasks excluded)
+  for (const s of [shortK, shortA]) {
+    const all = rows.filter(r => r.side === s);
+    const sideRows = all.filter(r => !r.running);
+    const nRunning = all.length - sideRows.length;
+    if (!all.length) continue;
     const tot = {
       solved: sideRows.filter(r => r.solved).length,
       infra: sideRows.filter(r => r.infra).length,
@@ -323,12 +330,12 @@ async function render(runId) {
     tr.style.fontWeight = "bold";
     tr.style.background = "#eef2f6";
     tr.innerHTML = `<td>TOTAL (${s})</td><td>${s}</td>
-      <td>${tot.solved}/${sideRows.length - tot.infra} solved${tot.infra ? ` (${tot.infra} infra-skipped)` : ""}</td>
+      <td>${tot.solved}/${sideRows.length - tot.infra} solved${tot.infra ? ` (${tot.infra} infra-skipped)` : ""}${nRunning ? ` (+${nRunning} in flight)` : ""}</td>
       <td>${tot.iters}</td><td>${tot.tokens}</td><td>${tot.secs}</td>`;
     tb.appendChild(tr);
   }
   document.getElementById("score").textContent =
-    `${runId} — ${rows.filter(r => r.solved).length}/${rows.length} solves`;
+    `${runId} — ${rows.filter(r => r.solved).length}/${rows.filter(r => !r.running).length} solves`;
 }
 
 loadRuns();
