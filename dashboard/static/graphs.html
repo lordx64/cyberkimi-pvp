@@ -74,7 +74,9 @@
   <figure id="fig4" hidden>
     <figcaption style="border-top:none"><b>Table 1.</b> Per-task outcomes: iteration count,
       cumulative tokens, wall-clock seconds, and final verdict per agent.
-      ✗ = budget exhausted without crash; ✓ = crash triggered (solved);
+      ✗ = budget exhausted without crash (250 iterations, 30M-token backstop, or the
+      model's context window filled — Altar-1 serves 131K, CyberKimi ~1M);
+      ✓ = crash triggered (solved);
       ⚠ infra = harness/endpoint failure, excluded from the score — not a model loss;
       <i>… running</i> = task still in flight, not yet scored.</figcaption>
     <div style="max-height:420px; overflow-y:auto">
