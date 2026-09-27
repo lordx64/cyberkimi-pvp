@@ -50,7 +50,12 @@ After this, https://cyberpvp.adverserial.ai serves the dashboard.
 The CyberGym submission server stays on the Docker-internal gateway only —
 never public (matches upstream guidance).
 
-## D. Rehearsal (dual-model dry run)
+## D. Altar deployment
+
+Altar runs on 8× NVIDIA H200 GPUs with a 131,072-token context limit. Its
+serving setup follows the guidance in the [Hugging Face model card](https://huggingface.co/AikidoSec/altar-1).
+
+## E. Rehearsal (dual-model dry run)
 
 ```bash
 # The per-side agent launch commands are handed in via env:
@@ -66,7 +71,7 @@ git add traces/2026-MM-DD-test-match && git commit && git push
 
 Traces layout & rules of the match: see `traces/README.md`.
 
-## E. Costs & hygiene
+## F. Costs & hygiene
 
 - Benchmark box (`c7i.xlarge`): ~$0.18/hr while running. **Stop it between
   rehearsals** — EBS persists, boot takes ~1 min, EIP stays attached.

@@ -11,8 +11,9 @@ Public evidence repo: **https://github.com/lordx64/cyberkimi-pvp**
 
 - **CyberKimi by Adverserial AI** — Kimi model served at api.adverserial.ai (OpenAI-compatible)
 - **Altar-1** — Aikido's open-weight security model:
-  **https://huggingface.co/AikidoSec/altar-1** — served on our own GPU
-  (RunPod B300-class, vLLM, OpenAI-compatible endpoint)
+  **https://huggingface.co/AikidoSec/altar-1** — deployed by Adverserial AI on
+  8× NVIDIA H200 GPUs with a 131,072-token context limit. The serving setup
+  follows the guidance in the model's Hugging Face card. See [deployment notes](docs/altar-deployment.md).
 
 ## Fairness protocol (why results here can be trusted)
 
@@ -77,7 +78,7 @@ per upstream guidance.
 - `c7i.xlarge` benchmark box: ~$0.18/hr — **stop it when not rehearsing/streaming** (EBS persists)
 - 1TB gp3 data volume + root: ~$90/mo
 - Elastic IP: free while instance runs
-- Altar-1 serving: separate (RunPod B300 class GPU), not part of this repo's AWS spend
+- Altar-1 serving: separate 8×H200 deployment, not part of this repo's AWS spend
 
 If you hit a vCPU quota error on apply: `terraform apply -var instance_type=c7i.4xlarge`.
 
@@ -85,6 +86,6 @@ If you hit a vCPU quota error on apply: `terraform apply -var instance_type=c7i.
 
 - [ ] wire `run_match.sh` to the concrete agent harnesses (dry run on the 10-task subset)
 - [ ] normalized event adapters (raw harness logs → `events/*.jsonl`)
-- [ ] Altar-1 serving endpoint on RunPod (vLLM, OpenAI-compatible, VPC-peered or TLS)
+- [x] Altar-1 deployment on 8× NVIDIA H200 GPUs (131,072-token context)
 - [ ] live scoreboard + replay player in the dashboard
 - [ ] signed git tags / hash pre-commitment per match
