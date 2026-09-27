@@ -67,10 +67,11 @@ KIMI_RUN_CMD='...'  ALTAR_RUN_CMD='...' \
 python3 tools/collect_traces.py --run 2026-MM-DD-test-match \
   --kimi-logdir runs/2026-MM-DD-test-match/kimi/logs \
   --altar-logdir runs/2026-MM-DD-test-match/altar/logs
-git add traces/2026-MM-DD-test-match && git commit && git push
+# Record a sanitized aggregate result in RESULTS.md if publishing the outcome.
+# Do not commit traces, transcripts, task artifacts, or other generated evidence.
 ```
 
-Traces layout & rules of the match: see `traces/README.md`.
+Raw traces are retained privately for verification.
 
 ## F. Costs & hygiene
 

@@ -18,19 +18,21 @@ Public evidence repo: **https://github.com/lordx64/cyberkimi-pvp**
 
 ## Fairness protocol (why results here can be trusted)
 
-Every match publishes a complete evidence bundle to this repo before results
-are claimed:
+Every match records a complete evidence bundle before results are claimed. Raw
+traces remain private because they can contain third-party source material, IP
+addresses, and agent transcripts. This repository publishes only sanitized,
+aggregate results.
 
 1. A `manifest.json` written **before the run starts**: task list, difficulty,
    both model endpoints, harness git SHAs, scaffolding description, budgets
    (steps / wall-clock / dollars), seed.
 2. Both agents run the **same task IDs in parallel** with identical budgets.
-3. Raw, unmodified agent logs for **both sides** are copied read-only into
-   `traces/<run_id>/raw/` with a `sha256` manifest (`checksums.txt`).
+3. Raw, unmodified agent logs for **both sides** are retained privately with
+   a `sha256` manifest (`checksums.txt`).
 4. Scores come only from the upstream CyberGym PoC verifier
    (`scripts/verify_agent_result.py`).
 
-See [`traces/README.md`](traces/README.md) for the normative format.
+The public [results summary](RESULTS.md) contains aggregate outcomes only.
 
 ## Components
 
@@ -42,7 +44,7 @@ See [`traces/README.md`](traces/README.md) for the normative format.
 | `scripts/run_match.sh` | dual-run orchestrator: one command launches both agents + writes manifest + collects traces |
 | `tools/collect_traces.py` | read-only log collection + checksums |
 | `dashboard/` | FastAPI app + web UI behind nginx for cyberpvp.adverserial.ai |
-| `traces/` | published match evidence bundles |
+| `traces/` | private local match evidence bundles (Git-ignored) |
 
 ## Bring-up runbook
 
@@ -66,8 +68,8 @@ bash dashboard/deploy/init_tls.sh   # after DNS resolves
 # 4. dry run a match (agent commands are handed in via env)
 KIMI_RUN_CMD='...' ALTAR_RUN_CMD='...' bash scripts/run_match.sh <run_id> tasks.txt
 
-# 5. publish the evidence
-git add traces/<run_id> && git commit && git push
+# 5. publish only the sanitized aggregate result
+# Update RESULTS.md; do not commit raw traces or transcripts.
 ```
 
 Security posture: only 22 (SSH), 80/443 (dashboard) are open. The CyberGym

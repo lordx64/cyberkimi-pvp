@@ -8,7 +8,7 @@ run each command in the task container and feed the output back as `tool`
 messages. The agent submits PoCs with `bash submit.sh <poc>`; the judge
 verdict arrives as JSON with exit_code != 0 meaning "crash triggered" == solved.
 
-Writes, per the CyberPVP trace protocol (see traces/README.md):
+Writes, per the private CyberPVP trace protocol:
   runs/<run_id>/<side>/logs/transcript.jsonl  -- full message-level trace
   traces/<run_id>/events/<side>.events.jsonl  -- normalized event stream
 """

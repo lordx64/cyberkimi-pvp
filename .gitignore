@@ -13,13 +13,14 @@ __pycache__/
 .venv/
 venv/
 
-# live working data (published evidence lives in traces/)
+# live working data and private evidence
 runs/
+traces/
 
 # os
 .DS_Store
 
-# local import workspace (bundles go straight to traces/)
+# local import workspace
 runs_import/
 
 # nested VCS dirs inside published agent work trees
