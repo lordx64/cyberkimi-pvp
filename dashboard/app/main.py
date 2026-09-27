@@ -91,19 +91,101 @@ def checksums(run_id: str):
     return PlainTextResponse(c.read_text())
 
 
+_EVENTS_CACHE: dict = {}
+
+
+def _events_parsed(path: Path) -> list[dict]:
+    """Parsed events of an append-only JSONL file, incrementally re-read."""
+    try:
+        size = path.stat().st_size
+    except OSError:
+        return []
+    key = str(path)
+    pos, evs = _EVENTS_CACHE.get(key, (0, []))
+    if size < pos:  # truncated or rotated: start over
+        pos, evs = 0, []
+    if size == pos:
+        return evs
+    with path.open("rb") as fh:
+        fh.seek(pos)
+        chunk = fh.read(size - pos)
+    nl = chunk.rfind(b"\n")  # never consume a half-written final line
+    if nl < 0:
+        return evs
+    for line in chunk[:nl].decode("utf-8", "replace").splitlines():
+        if not line.strip():
+            continue
+        try:
+            e = json.loads(line)
+            e["_n"] = len(evs)  # global cursor: file offset (seq resets per task)
+            evs.append(e)
+        except json.JSONDecodeError:
+            pass
+    _EVENTS_CACHE[key] = (pos + nl + 1, evs)
+    return evs
+
+
 @app.get("/api/runs/{run_id}/events/{side}")
-def events(run_id: str, side: str):
+def events(run_id: str, side: str, tail: int = 0, limit: int = 0,
+           before_seq: int = 0, since_seq: int = 0):
+    if side not in SIDES:
+        raise HTTPException(400, "side must be kimi|altar")
+    f = _run_dir(run_id) / "events" / f"{side}.events.jsonl"
+    if not (tail or before_seq or since_seq):
+        # legacy: whole file (the dashboard figures need full history)
+        if not f.is_file():
+            # fall back. raw listing lets viewers browse even before adapters exist
+            raw = _run_dir(run_id) / "raw" / side
+            if raw.is_dir():
+                return {"note": "no normalized events yet",
+                        "raw_files": sorted(str(p.relative_to(raw)) for p in raw.rglob("*") if p.is_file())}
+            raise HTTPException(404, "no events")
+        return FileResponse(f)
+    if not f.is_file():
+        raise HTTPException(404, "no events")
+    evs = _events_parsed(f)
+    if since_seq:
+        return {"events": [e for e in evs if e["_n"] > since_seq],
+                "total": len(evs)}
+    if before_seq:
+        prev = [e for e in evs if e["_n"] < before_seq]
+        lim = max(1, min(limit or 20, 200))
+        return {"events": prev[-lim:], "total": len(evs),
+                "has_more": len(prev) > lim}
+    n = max(1, min(tail, 500))
+    return {"events": evs[-n:], "total": len(evs)}
+
+
+@app.get("/api/runs/{run_id}/events/{side}/stats")
+def event_stats(run_id: str, side: str):
     if side not in SIDES:
         raise HTTPException(400, "side must be kimi|altar")
     f = _run_dir(run_id) / "events" / f"{side}.events.jsonl"
     if not f.is_file():
-        # fall back. raw listing lets viewers browse even before adapters exist
-        raw = _run_dir(run_id) / "raw" / side
-        if raw.is_dir():
-            return {"note": "no normalized events yet",
-                    "raw_files": sorted(str(p.relative_to(raw)) for p in raw.rglob("*") if p.is_file())}
         raise HTTPException(404, "no events")
-    return FileResponse(f)
+    assigned = solved = infra = failed = iters = tokens = 0
+    cur = None
+    for e in _events_parsed(f):
+        k = e.get("kind")
+        if k == "task_assign":
+            assigned += 1
+            cur = e.get("task_id")
+        elif k == "llm_response":
+            iters += 1
+        elif k == "budget_update" and e.get("payload"):
+            tokens = e["payload"].get("cum_tokens", tokens)
+        elif k == "run_end":
+            sm = e.get("summary") or ""
+            if sm == "SOLVED":
+                solved += 1
+            elif sm.startswith("infra_error"):
+                infra += 1
+            else:
+                failed += 1
+            cur = None
+    return {"assigned": assigned, "solved": solved, "infra": infra,
+            "failed": failed, "iters": iters, "cum_tokens": tokens,
+            "current_task": cur}
 
 
 async def _tail(ws: WebSocket, f: Path, side: str, pos: int) -> int:

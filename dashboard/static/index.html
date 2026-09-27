@@ -3,62 +3,269 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CyberPVP — CyberGym dual-model arena</title>
+<title>CyberPVP — traces</title>
 <style>
   :root { --bg:#0b0e14; --panel:#121722; --line:#1f2a3d; --fg:#d6e2f0; --dim:#71809b;
           --kimi:#4ec9b0; --altar:#c586c0; }
   * { box-sizing:border-box; }
   body { margin:0; background:var(--bg); color:var(--fg);
-         font:14px/1.45 -apple-system,"SF Mono",Menlo,Consolas,monospace; }
-  header { padding:14px 18px; border-bottom:1px solid var(--line);
+         font:13px/1.45 -apple-system,"SF Mono",Menlo,Consolas,monospace; }
+  header { padding:12px 16px; border-bottom:1px solid var(--line);
            display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
-  h1 { font-size:17px; margin:0; letter-spacing:2px; }
-  h1 span { color:var(--dim); font-weight:normal; letter-spacing:0; font-size:13px; }
+  h1 { font-size:16px; margin:0; letter-spacing:2px; }
+  h1 span { color:var(--dim); font-weight:normal; letter-spacing:0; font-size:12px; }
+  nav a { color:var(--dim); font-size:12px; margin-right:10px; text-decoration:none; }
+  nav a b { color:var(--kimi); font-weight:normal; }
   select,button { background:var(--panel); color:var(--fg); border:1px solid var(--line);
-                  padding:6px 10px; border-radius:4px; font:inherit; }
-  #score { margin-left:auto; color:var(--dim); }
-  #columns { display:grid; grid-template-columns:1fr 1fr; height:calc(100vh - 53px); }
+                  padding:5px 9px; border-radius:4px; font:inherit; font-size:12px; }
+  #run-status { color:var(--dim); font-size:12px; }
+  #columns { display:grid; grid-template-columns:1fr 1fr; height:calc(100vh - 50px); }
   .pane { display:flex; flex-direction:column; min-width:0; }
   .pane + .pane { border-left:1px solid var(--line); }
-  .pane h2 { margin:0; padding:8px 12px; font-size:13px; border-bottom:1px solid var(--line);
-             background:var(--panel); }
-  #kimi-head  { color:var(--kimi); }
-  #altar-head { color:var(--altar); }
-  .log { flex:1; overflow-y:auto; padding:8px 12px; white-space:pre-wrap;
-         word-break:break-word; }
-  .ev { margin:0 0 6px; }
-  .ev .k { color:var(--dim); margin-right:8px; }
+  .pane h2 { margin:0; padding:7px 12px; font-size:12px; border-bottom:1px solid var(--line);
+             background:var(--panel); display:flex; gap:10px; align-items:baseline; }
+  #head-kimi  { color:var(--kimi); }
+  #head-altar { color:var(--altar); }
+  .stats { font-size:11px; color:var(--dim); font-weight:normal; letter-spacing:0; }
+  .toolbar { display:flex; gap:8px; padding:5px 12px; border-bottom:1px solid var(--line);
+             background:var(--panel); align-items:center; }
+  .toolbar label { color:var(--dim); font-size:11px; }
+  .log { flex:1; overflow-y:auto; padding:6px 10px; }
+  .row { border-bottom:1px solid #161d2b; }
+  .row .line { display:flex; gap:8px; padding:3px 4px; cursor:pointer;
+               white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .row .line:hover { background:#182030; }
+  .t { color:var(--dim); flex:none; }
+  .chip { flex:none; padding:0 6px; border-radius:3px; font-size:10px; line-height:18px;
+          background:#1c2635; color:#9db2cc; min-width:86px; text-align:center; }
+  .s { overflow:hidden; text-overflow:ellipsis; }
+  .detail { display:none; margin:4px 0 8px; padding:8px 10px; background:#0e1420;
+            border:1px solid var(--line); border-radius:4px; white-space:pre-wrap;
+            word-break:break-word; max-height:320px; overflow-y:auto; font-size:12px; }
+  .row.open .detail { display:block; }
+  .k-task_assign  { color:#7ecfff; } .k-llm_response { color:#c586c0; }
+  .k-tool_call    { color:#4ec9b0; } .k-tool_result  { color:#71809b; }
+  .k-verdict      { color:#d7ba7d; } .k-budget_update{ color:#4a5568; }
+  .k-run_end-ok   { color:#6a9955; font-weight:bold; }
+  .k-run_end-bad  { color:#f47a6a; font-weight:bold; }
+  .k-error        { color:#f44747; font-weight:bold; }
+  .more { display:block; width:100%; margin:4px 0 10px; color:var(--dim); }
   .placeholder { color:var(--dim); padding:18px; }
+  .hidden-by-filter { display:none; }
 </style>
 </head>
 <body>
 <header>
-  <h1>CYBERPVP <span>CyberGym dual-model arena — full traces published after each match</span></h1>
-  <nav style="font-size:12px"><a href="/index.html" style="color:#4ec9b0">live arena</a> <a href="/graphs.html" style="color:#71809b">research</a> <a href="/about.html" style="color:#71809b">what is this?</a></nav>
-  <select id="run-select"><option value="">— select a match —</option></select>
-  <button id="connect" disabled>watch</button>
-  <div id="score"></div>
+  <h1>CYBERPVP <span>traces — parsed event streams, click any row to expand</span></h1>
+  <nav><a href="/graphs.html">dashboard</a> <a href="/index.html"><b>traces</b></a> <a href="/about.html">what is this?</a></nav>
+  <select id="run-select"></select>
+  <span id="run-status"></span>
 </header>
 
 <div id="columns">
   <section class="pane">
-    <h2 id="kimi-head">CYBERKIMI BY ADVERSERIAL AI</h2>
-    <div class="log" id="log-kimi"><div class="placeholder">select a match</div></div>
+    <h2 id="head-kimi"><span class="name" id="name-kimi">A</span> <span class="stats" id="stats-kimi"></span></h2>
+    <div class="toolbar">
+      <label>show</label>
+      <select data-side="kimi" class="filter">
+        <option value="key">key events</option>
+        <option value="all">everything</option>
+        <option value="llm_response">model replies</option>
+        <option value="tool_call">commands</option>
+        <option value="tool_result">command output</option>
+        <option value="endings">verdicts &amp; endings</option>
+        <option value="errors">errors</option>
+      </select>
+      <label><input type="checkbox" class="autoscroll" data-side="kimi" checked> follow</label>
+    </div>
+    <div class="log" id="log-kimi"><div class="placeholder">loading…</div></div>
   </section>
   <section class="pane">
-    <h2 id="altar-head">ALTAR-1</h2>
-    <div class="log" id="log-altar"><div class="placeholder">select a match</div></div>
+    <h2 id="head-altar"><span class="name" id="name-altar">B</span> <span class="stats" id="stats-altar"></span></h2>
+    <div class="toolbar">
+      <label>show</label>
+      <select data-side="altar" class="filter">
+        <option value="key">key events</option>
+        <option value="all">everything</option>
+        <option value="llm_response">model replies</option>
+        <option value="tool_call">commands</option>
+        <option value="tool_result">command output</option>
+        <option value="endings">verdicts &amp; endings</option>
+        <option value="errors">errors</option>
+      </select>
+      <label><input type="checkbox" class="autoscroll" data-side="altar" checked> follow</label>
+    </div>
+    <div class="log" id="log-altar"><div class="placeholder">loading…</div></div>
   </section>
 </div>
 
 <script>
 const $ = id => document.getElementById(id);
-let ws = null;
+const SIDES = ["kimi", "altar"];
+const MAX_ROWS = 300;          // DOM cap per pane; history pages in via "earlier"
+const PAGE = 25;               // events fetched per "earlier" click
+const INITIAL_TAIL = 10;       // events loaded on first open
+const state = { kimi: { newest: 0 }, altar: { newest: 0 } };
+let currentRun = null, currentStatus = null;
+
+const ERROR_KINDS = new Set(["tool_call_malformed", "tool_call_unrecoverable", "side_abort"]);
+
+function chipClass(ev) {
+  if (ERROR_KINDS.has(ev.kind)) return "k-error";
+  if (ev.kind === "run_end")
+    return (ev.summary === "SOLVED") ? "k-run_end-ok" : "k-run_end-bad";
+  return "k-" + (ev.kind || "x");
+}
+
+function matchesFilter(ev, f) {
+  if (f === "all") return true;
+  if (f === "key") return ev.kind !== "budget_update";
+  if (f === "endings") return ev.kind === "verdict" || ev.kind === "run_end";
+  if (f === "errors")
+    return ERROR_KINDS.has(ev.kind) ||
+           (ev.kind === "run_end" && ev.summary !== "SOLVED");
+  return ev.kind === f;
+}
+
+function fmtTime(ts) {
+  const d = new Date(ts);
+  return isNaN(d) ? "" : d.toISOString().slice(11, 19);
+}
+
+function renderEvent(side, ev, prepend) {
+  const log = $("log-" + side);
+  const ph = log.querySelector(".placeholder");
+  if (ph) ph.remove();
+  const row = document.createElement("div");
+  row.className = "row";
+  row.dataset.seq = ev._n ?? 0;
+  row.dataset.kind = ev.kind || "";
+  const sum = (ev.summary || JSON.stringify(ev.payload || {})).replace(/\s+/g, " ");
+  const task = ev.task_id ? `[${ev.task_id}] ` : "";
+  row.innerHTML =
+    `<div class="line"><span class="t">${fmtTime(ev.ts)}</span>` +
+    `<span class="chip ${chipClass(ev)}">${ev.kind || "?"}</span>` +
+    `<span class="s">${escapeHtml(task + sum)}</span></div>` +
+    `<div class="detail">${escapeHtml(JSON.stringify(ev, null, 2))}</div>`;
+  row.querySelector(".line").onclick = () => row.classList.toggle("open");
+  row._ev = ev;
+  const f = document.querySelector(`.filter[data-side="${side}"]`).value;
+  if (!matchesFilter(ev, f)) row.classList.add("hidden-by-filter");
+  if (prepend && log.firstChild && log.firstChild.classList.contains("more"))
+    log.insertBefore(row, log.firstChild.nextSibling);
+  else if (prepend && log.firstChild) log.insertBefore(row, log.firstChild);
+  else log.appendChild(row);
+  return row;
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+}
+
+function trimDom(side) {
+  const log = $("log-" + side);
+  const rows = log.querySelectorAll(".row");
+  if (rows.length <= MAX_ROWS) return;
+  const drop = rows.length - MAX_ROWS;
+  for (let i = 0; i < drop; i++) rows[i].remove();
+}
+
+function prettyModel(m, fallback) {
+  if (!m) return fallback;
+  const s = m.toLowerCase();
+  if (s.includes("cyberkimi")) return "CyberKimi by Adverserial AI";
+  if (s.includes("cyberglm")) return "CyberGLM by Adverserial AI";
+  if (s.includes("altar")) return "ALTAR-1";
+  return m;
+}
+
+async function paneTitles(rid) {
+  try {
+    const man = await (await fetch(`/api/runs/${rid}/manifest`)).json();
+    let k = prettyModel(man?.sides?.kimi?.model, "CyberKimi by Adverserial AI");
+    let a = prettyModel(man?.sides?.altar?.model, "challenger");
+    if (k === a) { k += " — A"; a += " — B"; }
+    setHead("kimi", k); setHead("altar", a);
+  } catch (e) { /* keep defaults */ }
+}
+
+function setHead(side, name) {
+  $("name-" + side).textContent = name;
+}
+
+async function refreshStats(rid) {
+  for (const s of SIDES) {
+    try {
+      const st = await (await fetch(`/api/runs/${rid}/events/${s}/stats`)).json();
+      const cur = st.current_task ? ` · working: ${st.current_task}` : "";
+      $("stats-" + s).textContent =
+        `solved ${st.solved}/${st.assigned} · ${st.iters} iters · ` +
+        `${(st.cum_tokens / 1e6).toFixed(1)}M tok${cur}`;
+    } catch (e) { /* stats not ready */ }
+  }
+}
+
+function moreButton(side) {
+  const b = document.createElement("button");
+  b.className = "more";
+  b.textContent = "▼ load earlier events";
+  b.onclick = () => loadEarlier(side, b);
+  return b;
+}
+
+async function loadEarlier(side, btn) {
+  const log = $("log-" + side);
+  const first = log.querySelector(".row");
+  if (!first) return;
+  btn.disabled = true;
+  try {
+    const d = await (await fetch(
+      `/api/runs/${currentRun}/events/${side}?before_seq=${first.dataset.seq}&limit=${PAGE}`
+    )).json();
+    for (let i = d.events.length - 1; i >= 0; i--)
+      renderEvent(side, d.events[i], true);
+    if (!d.has_more) btn.remove();
+  } finally { btn.disabled = false; }
+}
+
+async function tail(side) {
+  const since = state[side].newest;
+  const url = since
+    ? `/api/runs/${currentRun}/events/${side}?since_seq=${since}`
+    : `/api/runs/${currentRun}/events/${side}?tail=${INITIAL_TAIL}`;
+  const r = await fetch(url);
+  if (!r.ok) return;
+  const d = await r.json();
+  if (!d.events || !d.events.length) return;
+  const log = $("log-" + side);
+  if (!since) {  // first load: reset pane, add pager button
+    log.innerHTML = "";
+    log.appendChild(moreButton(side));
+  }
+  for (const ev of d.events) {
+    renderEvent(side, ev, false);
+    state[side].newest = Math.max(state[side].newest, ev._n ?? 0);
+  }
+  trimDom(side);
+  const auto = document.querySelector(`.autoscroll[data-side="${side}"]`).checked;
+  if (auto) log.scrollTop = log.scrollHeight;
+}
+
+async function openRun(rid, status) {
+  currentRun = rid; currentStatus = status;
+  state.kimi.newest = 0; state.altar.newest = 0;
+  for (const s of SIDES)
+    $("log-" + s).innerHTML = '<div class="placeholder">loading…</div>';
+  $("run-status").textContent = status ? `(${status})` : "";
+  paneTitles(rid);
+  await Promise.all([tail("kimi"), tail("altar")]);
+  refreshStats(rid);
+}
 
 async function loadRuns() {
   const runs = await (await fetch("/api/runs")).json();
   const sel = $("run-select");
-  sel.innerHTML = '<option value="">— select a match —</option>';
+  sel.innerHTML = "";
   for (const r of runs) {
     const res = r.results
       ? `  [${r.results?.kimi?.solved ?? "?"} : ${r.results?.altar?.solved ?? "?"}]`
@@ -68,68 +275,34 @@ async function loadRuns() {
     o.textContent = `${r.run_id}  (${r.status}, ${r.n_tasks} tasks)${res}`;
     sel.appendChild(o);
   }
-}
-
-function clearLogs() {
-  for (const s of ["kimi", "altar"])
-    $("log-" + s).innerHTML = '<div class="placeholder">waiting for events…</div>';
-  $("score").textContent = "";
-}
-
-function addEvent(side, line) {
-  const log = $("log-" + side);
-  if (log.querySelector(".placeholder")) log.innerHTML = "";
-  let ev;
-  try { ev = JSON.parse(line); } catch { ev = null; }
-  const div = document.createElement("div");
-  div.className = "ev";
-  const kind = ev && ev.kind ? ev.kind + "  " : "";
-  const text = ev
-    ? (ev.summary ?? ev.task_id ?? JSON.stringify(ev.payload ?? ""))
-    : line;
-  div.textContent = `${(ev && ev.ts) || ""}  ${text}`;
-  div.insertAdjacentHTML("afterbegin",
-    `<span class="k">${kind}</span>`);
-  log.appendChild(div);
-  log.scrollTop = log.scrollHeight;
-}
-
-function prettyModel(m, fallback) {
-  if (!m) return fallback;
-  const s = m.toLowerCase();
-  if (s.includes("cyberkimi")) return "CyberKimi by Adverserial AI";
-  if (s.includes("altar")) return "ALTAR-1";
-  return m;
-}
-
-async function setPaneTitles(runId) {
-  try {
-    const man = await (await fetch(`/api/runs/${runId}/manifest`)).json();
-    const k = man?.sides?.kimi?.model, a = man?.sides?.altar?.model;
-    let kl = prettyModel(k, "CYBERKIMI BY ADVERSERIAL AI");
-    let al = prettyModel(a, "ALTAR-1");
-    if (kl === al) { kl += " — A"; al += " — B"; }
-    $("kimi-head").textContent = kl;
-    $("altar-head").textContent = al;
-  } catch (e) { /* keep defaults */ }
-}
-
-function connect(runId) {
-  setPaneTitles(runId);
-  if (ws) ws.close();
-  clearLogs();
-  const proto = location.protocol === "https:" ? "wss" : "ws";
-  ws = new WebSocket(`${proto}://${location.host}/ws/live/${runId}`);
-  ws.onmessage = m => {
-    const d = JSON.parse(m.data);
-    if (d.side === "kimi" || d.side === "altar") addEvent(d.side, d.line);
+  sel.onchange = () => {
+    const r = runs.find(x => x.run_id === sel.value);
+    if (r) openRun(r.run_id, r.status);
   };
-  ws.onclose = () => { $("score").textContent = "disconnected"; };
-  ws.onopen  = () => { $("score").textContent = `live: ${runId}`; };
+  // landing default: the running match, else the newest finished/aborted one
+  if (runs.length) {
+    const def = runs.find(r => r.status === "running") || runs[0];
+    sel.value = def.run_id;
+    openRun(def.run_id, def.status);
+  }
 }
 
-$("run-select").onchange = e => { $("connect").disabled = !e.target.value; };
-$("connect").onclick = () => connect($("run-select").value);
+// live polling: cheap since_seq fetches; no-op when the run is finished
+setInterval(() => {
+  if (!currentRun) return;
+  tail("kimi"); tail("altar");
+  if (currentStatus === "running") refreshStats(currentRun);
+}, 2500);
+
+for (const el of document.querySelectorAll(".filter"))
+  el.onchange = e => {
+    const side = e.target.dataset.side, f = e.target.value;
+    for (const row of $("log-" + side).querySelectorAll(".row")) {
+      if (!row._ev) continue;
+      row.classList.toggle("hidden-by-filter", !matchesFilter(row._ev, f));
+    }
+  };
+
 loadRuns();
 </script>
 </body>
