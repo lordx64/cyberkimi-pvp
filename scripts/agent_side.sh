@@ -6,6 +6,7 @@
 #   CYBERKIMI_KEY_FILE  (default /data/cyberpvp/secrets/cyberkimi.env)
 #   AGENT_BASE_URL      (default https://api.adverserial.ai/v1)
 #   AGENT_MODEL         (default lordx64/cyberkimi)
+#   AGENT_EXTRA         (extra run_agent.py args, e.g. "--no-tools")
 set -uo pipefail
 
 BASE=/data/cyberpvp
@@ -36,6 +37,7 @@ while IFS= read -r task; do
     --max-iters "${MAX_STEPS:-100000}" \
     --timeout "${TIMEOUT_S:-0}" \
     --max-tokens "${MAX_TOKENS:-0}" \
+    ${AGENT_EXTRA:-} \
     >> "$LOG_DIR/agent.log" 2>&1
   rc=$?
   echo "[agent_side] $SIDE finished $task rc=$rc"
