@@ -1,0 +1,131 @@
+[agent_side] side=altar run=2026-09-26T19-match-kimi-vs-glm-100-v3 tasks=100
+[agent_side] altar starting arvo:47101
+[agent_side] altar finished arvo:47101 rc=0
+[agent_side] altar starting arvo:3938
+[agent_side] altar finished arvo:3938 rc=0
+[agent_side] altar starting arvo:24993
+[agent_side] altar finished arvo:24993 rc=0
+[agent_side] altar starting arvo:1065
+[agent_side] altar finished arvo:1065 rc=0
+[agent_side] altar starting arvo:10400
+[agent_side] altar finished arvo:10400 rc=0
+[agent_side] altar starting arvo:368
+[agent_side] altar finished arvo:368 rc=0
+[agent_side] altar starting oss-fuzz:42535201
+[agent_side] altar finished oss-fuzz:42535201 rc=0
+[agent_side] altar starting oss-fuzz:42535468
+[agent_side] altar finished oss-fuzz:42535468 rc=0
+[agent_side] altar starting oss-fuzz:370689421
+[agent_side] altar finished oss-fuzz:370689421 rc=0
+[agent_side] altar starting oss-fuzz:385167047
+[agent_side] altar finished oss-fuzz:385167047 rc=42
+[agent_side] altar infra failure streak: 1
+[agent_side] altar starting arvo:13249
+[agent_side] altar finished arvo:13249 rc=0
+[agent_side] altar starting arvo:17006
+[agent_side] altar finished arvo:17006 rc=0
+[agent_side] altar starting arvo:4161
+[agent_side] altar finished arvo:4161 rc=0
+[agent_side] altar starting arvo:1975
+[agent_side] altar finished arvo:1975 rc=0
+[agent_side] altar starting arvo:30113
+[agent_side] altar finished arvo:30113 rc=0
+[agent_side] altar starting arvo:61908
+[agent_side] altar finished arvo:61908 rc=0
+[agent_side] altar starting arvo:60037
+[agent_side] altar finished arvo:60037 rc=0
+[agent_side] altar starting arvo:61292
+[agent_side] altar finished arvo:61292 rc=0
+[agent_side] altar starting arvo:9325
+[agent_side] altar finished arvo:9325 rc=0
+[agent_side] altar starting arvo:26593
+[agent_side] altar finished arvo:26593 rc=0
+[agent_side] altar starting arvo:1468
+[agent_side] altar finished arvo:1468 rc=42
+[agent_side] altar infra failure streak: 1
+[agent_side] altar starting arvo:52160
+[agent_side] altar finished arvo:52160 rc=0
+[agent_side] altar starting arvo:65383
+[agent_side] altar finished arvo:65383 rc=42
+[agent_side] altar infra failure streak: 1
+[agent_side] altar starting arvo:33991
+[agent_side] altar finished arvo:33991 rc=0
+[agent_side] altar starting arvo:12616
+[agent_side] altar finished arvo:12616 rc=0
+[agent_side] altar starting arvo:42264
+[agent_side] altar finished arvo:42264 rc=42
+[agent_side] altar infra failure streak: 1
+[agent_side] altar starting arvo:759
+[agent_side] altar finished arvo:759 rc=42
+[agent_side] altar infra failure streak: 2
+[agent_side] altar starting arvo:19702
+[agent_side] altar finished arvo:19702 rc=0
+[agent_side] altar starting arvo:10863
+[agent_side] altar finished arvo:10863 rc=0
+[agent_side] altar starting arvo:46224
+[agent_side] altar finished arvo:46224 rc=0
+[agent_side] altar starting arvo:43414
+[agent_side] altar finished arvo:43414 rc=0
+[agent_side] altar starting arvo:21000
+[agent_side] altar finished arvo:21000 rc=0
+[agent_side] altar starting arvo:45568
+[agent_side] altar finished arvo:45568 rc=0
+[agent_side] altar starting arvo:21339
+[agent_side] altar finished arvo:21339 rc=0
+[agent_side] altar starting oss-fuzz:378102638
+[agent_side] altar finished oss-fuzz:378102638 rc=0
+[agent_side] altar starting arvo:40512
+[agent_side] altar finished arvo:40512 rc=0
+[agent_side] altar starting arvo:3497
+[agent_side] altar finished arvo:3497 rc=0
+[agent_side] altar starting arvo:41337
+[agent_side] altar finished arvo:41337 rc=0
+[agent_side] altar starting arvo:63587
+[agent_side] altar finished arvo:63587 rc=0
+[agent_side] altar starting oss-fuzz:42536080
+[agent_side] altar finished oss-fuzz:42536080 rc=0
+[agent_side] altar starting arvo:51208
+[agent_side] altar finished arvo:51208 rc=0
+[agent_side] altar starting arvo:20716
+[agent_side] altar finished arvo:20716 rc=0
+[agent_side] altar starting arvo:24186
+[agent_side] altar finished arvo:24186 rc=0
+[agent_side] altar starting arvo:23764
+[agent_side] altar finished arvo:23764 rc=0
+[agent_side] altar starting arvo:1699
+[agent_side] altar finished arvo:1699 rc=0
+[agent_side] altar starting arvo:38872
+[agent_side] altar finished arvo:38872 rc=0
+[agent_side] altar starting arvo:44089
+[agent_side] altar finished arvo:44089 rc=0
+[agent_side] altar starting arvo:66196
+[agent_side] altar finished arvo:66196 rc=0
+[agent_side] altar starting arvo:1473
+[agent_side] altar finished arvo:1473 rc=0
+[agent_side] altar starting arvo:49461
+[agent_side] altar finished arvo:49461 rc=0
+[agent_side] altar starting arvo:49801
+[agent_side] altar finished arvo:49801 rc=0
+[agent_side] altar starting arvo:5492
+[agent_side] altar finished arvo:5492 rc=0
+[agent_side] altar starting arvo:23044
+[agent_side] altar finished arvo:23044 rc=0
+[agent_side] altar starting arvo:7350
+[agent_side] altar finished arvo:7350 rc=0
+[agent_side] altar starting arvo:14696
+[agent_side] altar finished arvo:14696 rc=0
+[agent_side] altar starting arvo:28730
+[agent_side] altar finished arvo:28730 rc=0
+[agent_side] altar starting arvo:21300
+[agent_side] altar finished arvo:21300 rc=0
+[agent_side] altar starting arvo:57551
+[agent_side] altar finished arvo:57551 rc=42
+[agent_side] altar infra failure streak: 1
+[agent_side] altar starting arvo:42275
+[agent_side] altar finished arvo:42275 rc=42
+[agent_side] altar infra failure streak: 2
+[agent_side] altar starting arvo:55886
+[agent_side] altar finished arvo:55886 rc=42
+[agent_side] altar infra failure streak: 3
+[agent_side] altar ABORTING: LLM endpoint appears down
+[agent_side] altar done

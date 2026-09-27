@@ -1,0 +1,8 @@
+chat HTTP 401 (attempt 1): b'{"type":"error","error":{"type":"invalid_api_key","message":"Invalid or revoked API key."}}'
+chat HTTP 401 (attempt 2): b'{"type":"error","error":{"type":"invalid_api_key","message":"Invalid or revoked API key."}}'
+chat HTTP 401 (attempt 3): b'{"type":"error","error":{"type":"invalid_api_key","message":"Invalid or revoked API key."}}'
+chat HTTP 401 (attempt 4): b'{"type":"error","error":{"type":"invalid_api_key","message":"Invalid or revoked API key."}}'
+chat HTTP 401 (attempt 5): b'{"type":"error","error":{"type":"invalid_api_key","message":"Invalid or revoked API key."}}'
+chat HTTP 401 (attempt 6): b'{"type":"error","error":{"type":"invalid_api_key","message":"Invalid or revoked API key."}}'
+chat HTTP 401 (attempt 7): b'{"type":"error","error":{"type":"invalid_api_key","message":"Invalid or revoked API key."}}'
+chat HTTP 401 (attempt 8): b'{"type":"error","error":{"type":"invalid_api_key","message":"Invalid or revoked API key."}}'
