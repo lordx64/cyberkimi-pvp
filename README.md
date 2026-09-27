@@ -11,9 +11,10 @@ Public evidence repo: **https://github.com/lordx64/cyberkimi-pvp**
 
 - **CyberKimi by Adverserial AI** — Kimi-based model served at api.adverserial.ai (OpenAI-compatible)
 - **Altar-1** — Aikido's open-weight security model:
-  **https://huggingface.co/AikidoSec/altar-1** — deployed by Adverserial AI on
-  8× NVIDIA H200 GPUs with a 131,072-token context limit. The serving setup
-  follows the guidance in the model's Hugging Face card. See [deployment notes](docs/altar-deployment.md).
+  **https://huggingface.co/AikidoSec/altar-1** — deployed by Adverserial AI as
+  two replicas, each running on 4× NVIDIA H200 GPUs, with a 131,072-token
+  context limit. The serving setup follows the guidance in the model's Hugging
+  Face card. See [deployment notes](docs/altar-deployment.md).
 
 ## Fairness protocol (why results here can be trusted)
 

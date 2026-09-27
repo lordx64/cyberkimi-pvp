@@ -52,8 +52,9 @@ never public (matches upstream guidance).
 
 ## D. Altar deployment
 
-Altar runs on 8× NVIDIA H200 GPUs with a 131,072-token context limit. Its
-serving setup follows the guidance in the [Hugging Face model card](https://huggingface.co/AikidoSec/altar-1).
+Altar runs as two replicas, each on 4× NVIDIA H200 GPUs, with a
+131,072-token context limit. Its serving setup follows the guidance in the
+[Hugging Face model card](https://huggingface.co/AikidoSec/altar-1).
 
 ## E. Rehearsal (dual-model dry run)
 
