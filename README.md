@@ -10,6 +10,7 @@ Public evidence repo: **https://github.com/lordx64/cyberkimi-pvp**
 ## Competing models
 
 - **CyberKimi by Adverserial AI** — Kimi-based model served at api.adverserial.ai (OpenAI-compatible)
+- **CyberGLM by Adverserial AI** — Cybersecurity-focused model served at api.adverserial.ai (OpenAI-compatible)
 - **Altar-1** — Aikido's open-weight security model:
   **https://huggingface.co/AikidoSec/altar-1** — deployed by Adverserial AI as
   two replicas, each running on 4× NVIDIA H200 GPUs, with a 131,072-token
