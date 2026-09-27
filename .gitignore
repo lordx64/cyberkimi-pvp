@@ -24,3 +24,5 @@ runs_import/
 
 # nested VCS dirs inside published agent work trees
 **/.git/
+
+.env
