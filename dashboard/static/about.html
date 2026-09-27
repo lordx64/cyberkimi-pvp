@@ -100,11 +100,44 @@ picking.
       call, judge verdicts. Both streams are broadcast live here.</li>
   <li><b>Checksums.</b> Every published trace file is sha256-listed in
       <code>checksums.txt</code>, verified on import, then pushed to the public
-      evidence repository:
-      <code>github.com/lordx64/cyberkimi-pvp</code>.</li>
-  <li><b>Full scaffolding public.</b> Agent code, prompts, budgets, and seeds
-      are in the repository — anyone can audit or rerun a match.</li>
+      evidence repository.</li>
 </ul>
+
+<h2>Everything is published</h2>
+<p>
+After each match, the complete evidence bundle is uploaded to the public
+repository
+<b><a href="https://github.com/lordx64/cyberkimi-pvp">github.com/lordx64/cyberkimi-pvp</a></b>
+— not summaries, the raw material:
+</p>
+<div class="card">
+<ul>
+  <li><code>manifest.json</code> — written <i>before the first iteration</i>:
+      the exact task list and order, the sampling seed, both models and
+      endpoints, the harness commit SHA, and every budget.</li>
+  <li><code>events/&lt;lane&gt;.events.jsonl</code> — both lanes' normalized
+      event streams: every model reply, every command executed in the sandbox,
+      every output, per-call token usage, judge verdicts, and any infra
+      incident or malformed-output recovery, timestamped and sequenced.</li>
+  <li><code>raw/&lt;lane&gt;/work/&lt;task&gt;/transcript.jsonl</code> — the
+      full message-level transcript of every task: complete prompts, reasoning
+      traces, tool calls, and outputs, exactly as the model saw them.</li>
+  <li><code>raw/&lt;lane&gt;/logs/</code> + <code>console.log</code> — the
+      lane's agent and console logs, so even harness-level behavior is
+      auditable.</li>
+  <li><code>checksums.txt</code> — a sha256 digest of every file in the
+      bundle, so anyone can verify the published evidence is bit-identical to
+      what the box produced.</li>
+</ul>
+</div>
+<p>
+The repository also carries everything needed to reproduce or audit a match:
+the agent runner and its system prompt, the orchestration scripts, the task
+lists and seeds, this dashboard's source code, and a
+<code>RESULTS.md</code> scoreboard updated after every match. Nothing is
+cherry-picked: aborted runs and infrastructure failures are published with
+the same fidelity as clean wins.
+</p>
 
 <h2>Reading the dashboard</h2>
 <ul>
