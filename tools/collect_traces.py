@@ -34,14 +34,28 @@ def copy_side(src: Path, dst: Path) -> int:
     if not src.is_dir():
         sys.exit(f"error: log dir not found: {src}")
     n = 0
+    skipped = []
     for root, _, files in os.walk(src):
         for name in files:
             s = Path(root) / name
+            # agent build trees contain absolute symlinks into container
+            # overlays that dangle once the container is gone; a missing
+            # target must not kill the whole collection (v3 lost the entire
+            # altar lane to one dangling symlink in kimi's gen tree)
+            if s.is_symlink() and not s.exists():
+                skipped.append(str(s))
+                continue
             rel = s.relative_to(src)
             d = dst / rel
             d.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(s, d)
+            try:
+                shutil.copy2(s, d)
+            except OSError as e:
+                skipped.append(f"{s} ({e})")
+                continue
             n += 1
+    for s in skipped:
+        print(f"skipped: {s}", file=sys.stderr)
     return n
 
 
