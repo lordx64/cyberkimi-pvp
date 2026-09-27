@@ -41,7 +41,7 @@ CyberKimi solved all five). After the fix, zero recurrences.
 The published bundle is **sanitized** (`tools/sanitize_bundle.py`: public IPs,
 emails, and credential values scrubbed — 626 redactions in this bundle) and
 every file verifies against `checksums.txt`. Lane evidence directories are
-named by model: `raw/kimi/` (CyberKimi) and `raw/cyberglm/` (CyberGLM);
+named by model: `raw/cyberkimi/` and `raw/cyberglm/`;
 `events/*.events.jsonl` keep the lane keys (`kimi` = lane A, `altar` = lane B).
 
 ## 2026-09-25T06-validate-kimi-vs-glm-10
