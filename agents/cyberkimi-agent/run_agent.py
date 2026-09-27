@@ -60,13 +60,27 @@ class ContextExhausted(Exception):
 
 
 class ChatClient:
-    def __init__(self, base, key, model, log):
+    # The gateway's tool parser hard-fails (HTTP 500) when the model emits a
+    # tool call whose arguments aren't valid JSON (typically unescaped nested
+    # quotes in a bash command). Retrying the identical request regenerates the
+    # same malformed call, so instead we nudge the model to re-emit it with
+    # valid JSON. Only when recovery is exhausted does the task infra-skip.
+    MALFORMED_MARKER = b"Failed to parse tool call"
+    MAX_NUDGES = 3
+    NUDGE = ("Your previous response contained a tool call whose arguments "
+             "were not valid JSON, and the server rejected it. Re-emit the "
+             "SAME intended command as a bash tool call, but with strictly "
+             "valid JSON arguments: escape every double quote inside the "
+             "command string as \\\" and every backslash as \\\\.")
+
+    def __init__(self, base, key, model, log, event_cb=None):
         self.base = base.rstrip("/")
         self.key = key
         self.model = model
         self.log = log
+        self.event_cb = event_cb
 
-    def chat(self, messages):
+    def _request(self, messages):
         body = json.dumps({
             "model": self.model,
             "messages": messages,
@@ -78,12 +92,17 @@ class ChatClient:
             "stream": True,
             "stream_options": {"include_usage": True},
         }).encode()
-        req = urllib.request.Request(
+        return urllib.request.Request(
             self.base + "/chat/completions",
             data=body,
             headers={"Authorization": "Bearer " + self.key,
                      "Content-Type": "application/json"},
         )
+
+    def chat(self, messages):
+        req = self._request(messages)
+        nudges = 0
+        unrecoverable_noted = False
         for attempt in range(1, 9):
             try:
                 content, reasoning, usage = [], [], {}
@@ -139,6 +158,33 @@ class ChatClient:
                 if e.code in (400, 413) and (b"context" in ebody.lower()
                                              or b"length" in ebody.lower()):
                     raise ContextExhausted(ebody.decode("utf-8", "replace"))
+                if e.code == 500 and self.MALFORMED_MARKER in ebody:
+                    if nudges < self.MAX_NUDGES:
+                        nudges += 1
+                        nudge = (self.NUDGE + "\nServer error detail: "
+                                 + ebody.decode("utf-8", "replace")[:400])
+                        messages.append({"role": "user", "content": nudge})
+                        req = self._request(messages)
+                        self.log(f"chat malformed tool call (attempt "
+                                 f"{attempt}): recovery nudge "
+                                 f"{nudges}/{self.MAX_NUDGES}")
+                        if self.event_cb:
+                            self.event_cb(
+                                "tool_call_malformed",
+                                summary="gateway 500 on malformed tool-call "
+                                        "JSON; nudged model to re-emit",
+                                payload={"nudge": nudges,
+                                         "max_nudges": self.MAX_NUDGES})
+                        time.sleep(min(10 * attempt, 60))
+                        continue
+                    if not unrecoverable_noted:
+                        unrecoverable_noted = True
+                        if self.event_cb:
+                            self.event_cb(
+                                "tool_call_unrecoverable",
+                                summary="model kept emitting malformed "
+                                        "tool-call JSON after nudges",
+                                payload={"nudges": nudges})
                 if attempt == 8:
                     raise
                 time.sleep(min(10 * attempt, 60))
@@ -288,7 +334,8 @@ def main():
 
     transcript = Path(args.work_dir) / "transcript.jsonl"
     client = ChatClient(args.base_url, key, args.model,
-                        lambda s: open(transcript, "a").write(s + "\n"))
+                        lambda s: open(transcript, "a").write(s + "\n"),
+                        event_cb=ev)
 
     image = args.task_image or args.image
     container = Container(image, str(gen_dir))
