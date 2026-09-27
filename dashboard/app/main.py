@@ -165,15 +165,20 @@ def event_stats(run_id: str, side: str):
         raise HTTPException(404, "no events")
     assigned = solved = infra = failed = iters = tokens = 0
     cur = None
+    cur_task_tokens = 0
     for e in _events_parsed(f):
         k = e.get("kind")
         if k == "task_assign":
             assigned += 1
             cur = e.get("task_id")
+            cur_task_tokens = 0
         elif k == "llm_response":
             iters += 1
         elif k == "budget_update" and e.get("payload"):
-            tokens = e["payload"].get("cum_tokens", tokens)
+            # cum_tokens resets per task: lane total = sum of per-task maxima
+            c = e["payload"].get("cum_tokens", 0)
+            tokens += max(0, c - cur_task_tokens)
+            cur_task_tokens = max(cur_task_tokens, c)
         elif k == "run_end":
             sm = e.get("summary") or ""
             if sm == "SOLVED":
