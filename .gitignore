@@ -13,9 +13,11 @@ __pycache__/
 .venv/
 venv/
 
-# live working data and private evidence
+# live working data (raw, unsanitized evidence — never commit)
 runs/
-traces/
+
+# traces/ is NOT ignored on purpose, but only bundles processed by
+# tools/sanitize_bundle.py (IPs/emails/credentials scrubbed) may be committed
 
 # os
 .DS_Store

@@ -19,20 +19,22 @@ Public evidence repo: **https://github.com/lordx64/cyberkimi-pvp**
 ## Fairness protocol (why results here can be trusted)
 
 Every match records a complete evidence bundle before results are claimed. Raw
-traces remain private because they can contain third-party source material, IP
-addresses, and agent transcripts. This repository publishes only sanitized,
-aggregate results.
+traces can contain third-party source material, public IP addresses, and
+credential-shaped strings, so each bundle is **sanitized before publication**
+(`tools/sanitize_bundle.py`: public IPs, emails, and credentials scrubbed);
+the unsanitized originals are retained privately for dispute resolution.
 
 1. A `manifest.json` written **before the run starts**: task list, difficulty,
    both model endpoints, harness git SHAs, scaffolding description, budgets
    (steps / wall-clock / dollars), seed.
 2. Both agents run the **same task IDs in parallel** with identical budgets.
-3. Raw, unmodified agent logs for **both sides** are retained privately with
-   a `sha256` manifest (`checksums.txt`).
+3. The **sanitized** event streams, per-task transcripts, and logs for **both
+   sides** are published under `traces/<run_id>/` with a `sha256` manifest
+   (`checksums.txt`).
 4. Scores come only from the upstream CyberGym PoC verifier
    (`scripts/verify_agent_result.py`).
 
-The public [results summary](RESULTS.md) contains aggregate outcomes only.
+The public [results summary](RESULTS.md) aggregates every match.
 
 ## Components
 
@@ -44,7 +46,7 @@ The public [results summary](RESULTS.md) contains aggregate outcomes only.
 | `scripts/run_match.sh` | dual-run orchestrator: one command launches both agents + writes manifest + collects traces |
 | `tools/collect_traces.py` | read-only log collection + checksums |
 | `dashboard/` | FastAPI app + web UI behind nginx for cyberpvp.adverserial.ai |
-| `traces/` | private local match evidence bundles (Git-ignored) |
+| `traces/` | published match evidence bundles (sanitized before commit) |
 
 ## Bring-up runbook
 
@@ -68,8 +70,10 @@ bash dashboard/deploy/init_tls.sh   # after DNS resolves
 # 4. dry run a match (agent commands are handed in via env)
 KIMI_RUN_CMD='...' ALTAR_RUN_CMD='...' bash scripts/run_match.sh <run_id> tasks.txt
 
-# 5. publish only the sanitized aggregate result
-# Update RESULTS.md; do not commit raw traces or transcripts.
+# 5. sanitize + publish the evidence bundle
+python3 tools/sanitize_bundle.py traces/<run_id> --secret <api-key-value>  # scrub IPs/emails/keys
+python3 tools/collect_traces.py --run <run_id> --traces-root traces --checksums-only
+git add traces/<run_id> RESULTS.md && git commit && git push
 ```
 
 Security posture: only 22 (SSH), 80/443 (dashboard) are open. The CyberGym
