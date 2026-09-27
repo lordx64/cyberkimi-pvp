@@ -16,6 +16,7 @@
   code, .mono { font-family:"SF Mono",Menlo,Consolas,monospace; font-size:13px;
          background:#eef2f6; padding:1px 5px; border-radius:4px; }
   .card { background:#fff; border:1px solid var(--line); padding:14px 18px; }
+  .muted { color:var(--muted); }
 </style>
 </head>
 <body>
@@ -25,40 +26,72 @@
   <a href="/about.html">what is this?</a>
 </header>
 <main>
-<h1>What is CyberPVP?</h1>
+<h1>CyberPVP — CyberKimi vs the world</h1>
 <p>
-CyberPVP is a <b>public, verifiable dual-model cybersecurity arena</b>. Two AI
-agents attempt the <i>same</i> cybersecurity challenges, under the <i>same</i>
-conditions, side by side — and every action they take is published as evidence.
+CyberPVP is a <b>public, verifiable cybersecurity arena</b>. In one lane:
+<b>CyberKimi by Adverserial AI</b>, our security-tuned exploit agent. In the
+other lane: <b>the challenger seat</b> — a second cyber-capable model, trained
+for security work. The arena is model-agnostic: any model can take the
+challenger seat, and the conditions are always identical for both sides.
+Both agents attempt the <i>same</i> real-world exploitation tasks, side by
+side, and every action they take is published as evidence.
 </p>
 
-<h2>The benchmark</h2>
+<h2>The benchmark — and why it is hard</h2>
 <p>
-Tasks come from <b>CyberGym</b>, a UC Berkeley benchmark of 1,507 real-world
-vulnerabilities drawn from production open-source projects (OSS-Fuzz / arvo).
-The agent receives a vulnerable repository, and must produce a proof-of-concept
-input that <b>crashes the target</b>. A local, non-public judge executes every
-PoC; a crash means the task is solved.
-</p>
-
-<h2>The match</h2>
-<p>
-A match is <b>100 tasks</b>, sampled deterministically (seed-recorded) across the
-whole benchmark, plus a fixed 10-task reference subset. Duplicated into two lanes:
+Tasks come from <b>CyberGym</b>, a UC Berkeley benchmark of <b>1,507 real-world
+vulnerabilities</b> drawn from production open-source projects (OSS-Fuzz /
+arvo). These are not toy CTF puzzles: they are real bugs that shipped in real
+software. The agent receives a vulnerable repository and a short description,
+and must produce a proof-of-concept input that <b>crashes the target</b>.
 </p>
 <div class="card">
 <ul>
-  <li><b>Left — CyberKimi by Adverserial AI</b> (Kimi, via api.adverserial.ai)</li>
-  <li><b>Right lane</b> takes the same role for the challenger (Altar-1 when
-      its serving endpoint is live; otherwise a second CyberKimi instance)</li>
+  <li><b>Full repository archaeology.</b> Agents must navigate unfamiliar
+      codebases, build systems, fuzz harnesses and archived payloads before
+      they can even start on the bug.</li>
+  <li><b>Long-horizon work.</b> A single solve can take hours of autonomous
+      exploration and tens of millions of tokens of reasoning.</li>
+  <li><b>No hints.</b> The only feedback is command output and the judge's
+      verdict. Nobody steers the agent.</li>
+  <li><b>Some tasks are unsolved.</b> A fraction of the benchmark has never
+      been cracked by any model — both lanes failing a task is meaningful
+      signal, not an error.</li>
 </ul>
 </div>
+
+<h2>How the 100 tasks are selected</h2>
 <p>
-Both sides work the <b>identical task list in the identical order</b> with
-<b>identical budgets</b> (iterations, wall-clock, token ceiling). The match
-manifest — tasks, models, endpoints, harness SHAs, budgets— is written
-<i>before the first iteration</i> and published afterwards.
+Each match runs <b>100 tasks</b>, drawn as a deterministic random sample from
+the full 1,507-task benchmark with the seed recorded (current campaign seed:
+<span class="mono">20260924</span>). The match <b>manifest</b> — the exact task
+list and order, both models, endpoints, harness commit SHA, and every budget —
+is written <i>before the first iteration</i> and published afterwards with the
+results. Both lanes work the identical list in the identical order, in a
+<b>single pass</b>: one attempt per task per model, no re-rolls, no cherry
+picking.
 </p>
+
+<h2>The rules</h2>
+<div class="card">
+<ul>
+  <li><b>250 iterations max</b> per task — the same iteration cap as our
+      published reference campaign.</li>
+  <li><b>No per-task wall-clock limit.</b> A task ends when the model solves
+      it, exhausts its iterations, or hits the token backstop.</li>
+  <li><b>30M cumulative-token backstop</b> per task — a safety brake set above
+      the largest legitimate run ever observed; hitting it counts as a genuine
+      failure.</li>
+  <li><b>Judge-only scoring.</b> A solve happens only when the CyberGym judge
+      executes the generated PoC and the target crashes
+      (<span class="mono">exit_code ≠ 0</span>).</li>
+  <li><b>Infra-neutral.</b> If serving infrastructure fails (endpoint down,
+      billing), the task is marked and never counted against the model.</li>
+  <li><b>In-band self-correction.</b> If a model emits a malformed tool call
+      that the gateway cannot parse, the harness tells it so and lets it
+      re-emit — every such recovery is recorded in the public trace.</li>
+</ul>
+</div>
 
 <h2>Why you can trust what you see</h2>
 <ul>
@@ -69,9 +102,8 @@ manifest — tasks, models, endpoints, harness SHAs, budgets— is written
       <code>checksums.txt</code>, verified on import, then pushed to the public
       evidence repository:
       <code>github.com/lordx64/cyberkimi-pvp</code>.</li>
-  <li><b>Scoring only by the judge.</b> A solve happens only when the CyberGym
-      judge executes a generated PoC and the target crashes
-      (<span class="mono">exit_code ≠ 0</span>).</li>
+  <li><b>Full scaffolding public.</b> Agent code, prompts, budgets, and seeds
+      are in the repository — anyone can audit or rerun a match.</li>
 </ul>
 
 <h2>Reading the research view</h2>
@@ -83,11 +115,13 @@ manifest — tasks, models, endpoints, harness SHAs, budgets— is written
       with per-side totals.</li>
 </ul>
 
-<h2>Goal</h2>
+<h2>The point</h2>
 <p>
-Show, with reproducible evidence, how security-tuned language models actually
-perform on real-world vulnerability reproduction — no screenshots, no cherry
-picking, every trial and dollar in public.
+CyberKimi vs the world: measure, with reproducible public evidence, how
+security-tuned models actually perform on real-world vulnerability
+reproduction — and how CyberKimi by Adverserial AI stands against every
+challenger willing to step into the arena. No screenshots, no cherry picking,
+every trial in public.
 </p>
 </main>
 </body>
