@@ -198,8 +198,9 @@ async function refreshStats(rid) {
     try {
       const st = await (await fetch(`/api/runs/${rid}/events/${s}/stats`)).json();
       const cur = st.current_task ? ` · working: ${st.current_task}` : "";
+      const done = st.solved + st.failed + st.infra;  // finished tasks, like the dashboard table
       $("stats-" + s).textContent =
-        `solved ${st.solved}/${st.assigned} · ${st.iters} iters · ` +
+        `solved ${st.solved}/${done} · ${st.iters} iters · ` +
         `${(st.cum_tokens / 1e6).toFixed(1)}M tok${cur}`;
     } catch (e) { /* stats not ready */ }
   }

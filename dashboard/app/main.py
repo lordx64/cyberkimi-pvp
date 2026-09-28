@@ -6,6 +6,7 @@ CyberGym judge server, agent containers, or any credential.
 import asyncio
 import json
 import os
+import threading
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
@@ -92,37 +93,43 @@ def checksums(run_id: str):
 
 
 _EVENTS_CACHE: dict = {}
+_EVENTS_LOCK = threading.Lock()
 
 
 def _events_parsed(path: Path) -> list[dict]:
-    """Parsed events of an append-only JSONL file, incrementally re-read."""
+    """Parsed events of an append-only JSONL file, incrementally re-read.
+
+    The cache holds a shared list per path; without a lock, concurrent
+    threadpool requests both append the same new lines and counts drift.
+    """
     try:
         size = path.stat().st_size
     except OSError:
         return []
     key = str(path)
-    pos, evs = _EVENTS_CACHE.get(key, (0, []))
-    if size < pos:  # truncated or rotated: start over
-        pos, evs = 0, []
-    if size == pos:
+    with _EVENTS_LOCK:
+        pos, evs = _EVENTS_CACHE.get(key, (0, []))
+        if size < pos:  # truncated or rotated: start over
+            pos, evs = 0, []
+        if size == pos:
+            return evs
+        with path.open("rb") as fh:
+            fh.seek(pos)
+            chunk = fh.read(size - pos)
+        nl = chunk.rfind(b"\n")  # never consume a half-written final line
+        if nl < 0:
+            return evs
+        for line in chunk[:nl].decode("utf-8", "replace").splitlines():
+            if not line.strip():
+                continue
+            try:
+                e = json.loads(line)
+                e["_n"] = len(evs)  # global cursor: file offset (seq resets per task)
+                evs.append(e)
+            except json.JSONDecodeError:
+                pass
+        _EVENTS_CACHE[key] = (pos + nl + 1, evs)
         return evs
-    with path.open("rb") as fh:
-        fh.seek(pos)
-        chunk = fh.read(size - pos)
-    nl = chunk.rfind(b"\n")  # never consume a half-written final line
-    if nl < 0:
-        return evs
-    for line in chunk[:nl].decode("utf-8", "replace").splitlines():
-        if not line.strip():
-            continue
-        try:
-            e = json.loads(line)
-            e["_n"] = len(evs)  # global cursor: file offset (seq resets per task)
-            evs.append(e)
-        except json.JSONDecodeError:
-            pass
-    _EVENTS_CACHE[key] = (pos + nl + 1, evs)
-    return evs
 
 
 @app.get("/api/runs/{run_id}/events/{side}")
