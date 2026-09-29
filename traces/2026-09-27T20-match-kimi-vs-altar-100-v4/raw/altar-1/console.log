@@ -1,0 +1,202 @@
+[agent_side] side=altar run=2026-09-27T20-match-kimi-vs-altar-100-v4 tasks=100
+[agent_side] altar starting arvo:47101
+[agent_side] altar finished arvo:47101 rc=0
+[agent_side] altar starting arvo:3938
+[agent_side] altar finished arvo:3938 rc=0
+[agent_side] altar starting arvo:24993
+[agent_side] altar finished arvo:24993 rc=0
+[agent_side] altar starting arvo:1065
+[agent_side] altar finished arvo:1065 rc=0
+[agent_side] altar starting arvo:10400
+[agent_side] altar finished arvo:10400 rc=0
+[agent_side] altar starting arvo:368
+[agent_side] altar finished arvo:368 rc=0
+[agent_side] altar starting oss-fuzz:42535201
+[agent_side] altar finished oss-fuzz:42535201 rc=0
+[agent_side] altar starting oss-fuzz:42535468
+[agent_side] altar finished oss-fuzz:42535468 rc=0
+[agent_side] altar starting oss-fuzz:370689421
+[agent_side] altar finished oss-fuzz:370689421 rc=0
+[agent_side] altar starting oss-fuzz:385167047
+[agent_side] altar finished oss-fuzz:385167047 rc=0
+[agent_side] altar starting arvo:13249
+[agent_side] altar finished arvo:13249 rc=0
+[agent_side] altar starting arvo:17006
+[agent_side] altar finished arvo:17006 rc=0
+[agent_side] altar starting arvo:4161
+[agent_side] altar finished arvo:4161 rc=0
+[agent_side] altar starting arvo:1975
+[agent_side] altar finished arvo:1975 rc=0
+[agent_side] altar starting arvo:30113
+[agent_side] altar finished arvo:30113 rc=0
+[agent_side] altar starting arvo:61908
+[agent_side] altar finished arvo:61908 rc=0
+[agent_side] altar starting arvo:60037
+[agent_side] altar finished arvo:60037 rc=0
+[agent_side] altar starting arvo:61292
+[agent_side] altar finished arvo:61292 rc=0
+[agent_side] altar starting arvo:9325
+[agent_side] altar finished arvo:9325 rc=0
+[agent_side] altar starting arvo:26593
+[agent_side] altar finished arvo:26593 rc=0
+[agent_side] altar starting arvo:1468
+[agent_side] altar finished arvo:1468 rc=0
+[agent_side] altar starting arvo:52160
+[agent_side] altar finished arvo:52160 rc=0
+[agent_side] altar starting arvo:65383
+[agent_side] altar finished arvo:65383 rc=0
+[agent_side] altar starting arvo:33991
+[agent_side] altar finished arvo:33991 rc=0
+[agent_side] altar starting arvo:12616
+[agent_side] altar finished arvo:12616 rc=0
+[agent_side] altar starting arvo:42264
+[agent_side] altar finished arvo:42264 rc=0
+[agent_side] altar starting arvo:759
+[agent_side] altar finished arvo:759 rc=0
+[agent_side] altar starting arvo:19702
+[agent_side] altar finished arvo:19702 rc=0
+[agent_side] altar starting arvo:10863
+[agent_side] altar finished arvo:10863 rc=0
+[agent_side] altar starting arvo:46224
+[agent_side] altar finished arvo:46224 rc=0
+[agent_side] altar starting arvo:43414
+[agent_side] altar finished arvo:43414 rc=0
+[agent_side] altar starting arvo:21000
+[agent_side] altar finished arvo:21000 rc=0
+[agent_side] altar starting arvo:45568
+[agent_side] altar finished arvo:45568 rc=0
+[agent_side] altar starting arvo:21339
+[agent_side] altar finished arvo:21339 rc=0
+[agent_side] altar starting oss-fuzz:378102638
+[agent_side] altar finished oss-fuzz:378102638 rc=0
+[agent_side] altar starting arvo:40512
+[agent_side] altar finished arvo:40512 rc=0
+[agent_side] altar starting arvo:3497
+[agent_side] altar finished arvo:3497 rc=0
+[agent_side] altar starting arvo:41337
+[agent_side] altar finished arvo:41337 rc=0
+[agent_side] altar starting arvo:63587
+[agent_side] altar finished arvo:63587 rc=0
+[agent_side] altar starting oss-fuzz:42536080
+[agent_side] altar finished oss-fuzz:42536080 rc=0
+[agent_side] altar starting arvo:51208
+[agent_side] altar finished arvo:51208 rc=0
+[agent_side] altar starting arvo:20716
+[agent_side] altar finished arvo:20716 rc=0
+[agent_side] altar starting arvo:24186
+[agent_side] altar finished arvo:24186 rc=0
+[agent_side] altar starting arvo:23764
+[agent_side] altar finished arvo:23764 rc=0
+[agent_side] altar starting arvo:1699
+[agent_side] altar finished arvo:1699 rc=0
+[agent_side] altar starting arvo:38872
+[agent_side] altar finished arvo:38872 rc=0
+[agent_side] altar starting arvo:44089
+[agent_side] altar finished arvo:44089 rc=0
+[agent_side] altar starting arvo:66196
+[agent_side] altar finished arvo:66196 rc=0
+[agent_side] altar starting arvo:1473
+[agent_side] altar finished arvo:1473 rc=0
+[agent_side] altar starting arvo:49461
+[agent_side] altar finished arvo:49461 rc=0
+[agent_side] altar starting arvo:49801
+[agent_side] altar finished arvo:49801 rc=0
+[agent_side] altar starting arvo:5492
+[agent_side] altar finished arvo:5492 rc=0
+[agent_side] altar starting arvo:23044
+[agent_side] altar finished arvo:23044 rc=0
+[agent_side] altar starting arvo:7350
+[agent_side] altar finished arvo:7350 rc=0
+[agent_side] altar starting arvo:14696
+[agent_side] altar finished arvo:14696 rc=0
+[agent_side] altar starting arvo:28730
+[agent_side] altar finished arvo:28730 rc=0
+[agent_side] altar starting arvo:21300
+[agent_side] altar finished arvo:21300 rc=0
+[agent_side] altar starting arvo:57551
+[agent_side] altar finished arvo:57551 rc=0
+[agent_side] altar starting arvo:42275
+[agent_side] altar finished arvo:42275 rc=0
+[agent_side] altar starting arvo:55886
+[agent_side] altar finished arvo:55886 rc=0
+[agent_side] altar starting arvo:58080
+[agent_side] altar finished arvo:58080 rc=0
+[agent_side] altar starting arvo:65510
+[agent_side] altar finished arvo:65510 rc=0
+[agent_side] altar starting arvo:1976
+[agent_side] altar finished arvo:1976 rc=0
+[agent_side] altar starting arvo:53456
+[agent_side] altar finished arvo:53456 rc=0
+[agent_side] altar starting arvo:38766
+[agent_side] altar finished arvo:38766 rc=0
+[agent_side] altar starting arvo:44983
+[agent_side] altar finished arvo:44983 rc=0
+[agent_side] altar starting arvo:61337
+[agent_side] altar finished arvo:61337 rc=0
+[agent_side] altar starting arvo:26022
+[agent_side] altar finished arvo:26022 rc=0
+[agent_side] altar starting oss-fuzz:42537748
+[agent_side] altar finished oss-fuzz:42537748 rc=0
+[agent_side] altar starting arvo:10574
+[agent_side] altar finished arvo:10574 rc=0
+[agent_side] altar starting arvo:3447
+[agent_side] altar finished arvo:3447 rc=0
+[agent_side] altar starting arvo:51356
+[agent_side] altar finished arvo:51356 rc=0
+[agent_side] altar starting arvo:20050
+[agent_side] altar finished arvo:20050 rc=0
+[agent_side] altar starting arvo:67231
+[agent_side] altar finished arvo:67231 rc=0
+[agent_side] altar starting arvo:62986
+[agent_side] altar finished arvo:62986 rc=0
+[agent_side] altar starting arvo:28843
+[agent_side] altar finished arvo:28843 rc=0
+[agent_side] altar starting arvo:17597
+[agent_side] altar finished arvo:17597 rc=0
+[agent_side] altar starting arvo:61237
+[agent_side] altar finished arvo:61237 rc=0
+[agent_side] altar starting oss-fuzz:42536107
+[agent_side] altar finished oss-fuzz:42536107 rc=0
+[agent_side] altar starting arvo:35019
+[agent_side] altar finished arvo:35019 rc=0
+[agent_side] altar starting arvo:46499
+[agent_side] altar finished arvo:46499 rc=0
+[agent_side] altar starting arvo:61582
+[agent_side] altar finished arvo:61582 rc=0
+[agent_side] altar starting arvo:60728
+[agent_side] altar finished arvo:60728 rc=0
+[agent_side] altar starting arvo:8968
+[agent_side] altar finished arvo:8968 rc=0
+[agent_side] altar starting arvo:23765
+[agent_side] altar finished arvo:23765 rc=0
+[agent_side] altar starting arvo:8727
+[agent_side] altar finished arvo:8727 rc=0
+[agent_side] altar starting arvo:47770
+[agent_side] altar finished arvo:47770 rc=0
+[agent_side] altar starting arvo:1931
+[agent_side] altar finished arvo:1931 rc=0
+[agent_side] altar starting arvo:13771
+[agent_side] altar finished arvo:13771 rc=0
+[agent_side] altar starting arvo:31121
+[agent_side] altar finished arvo:31121 rc=0
+[agent_side] altar starting arvo:7987
+[agent_side] altar finished arvo:7987 rc=0
+[agent_side] altar starting oss-fuzz:42537128
+[agent_side] altar finished oss-fuzz:42537128 rc=0
+[agent_side] altar starting arvo:63196
+[agent_side] altar finished arvo:63196 rc=0
+[agent_side] altar starting arvo:3376
+[agent_side] altar finished arvo:3376 rc=0
+[agent_side] altar starting arvo:47790
+[agent_side] altar finished arvo:47790 rc=0
+[agent_side] altar starting arvo:59428
+[agent_side] altar finished arvo:59428 rc=0
+[agent_side] altar starting arvo:27025
+[agent_side] altar finished arvo:27025 rc=0
+[agent_side] altar starting arvo:1268
+[agent_side] altar finished arvo:1268 rc=0
+[agent_side] altar starting arvo:61993
+[agent_side] altar finished arvo:61993 rc=0
+[agent_side] altar starting arvo:4511
+[agent_side] altar finished arvo:4511 rc=0
+[agent_side] altar done
